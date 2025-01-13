@@ -1,6 +1,7 @@
 package src.Main;
 
 import src.API.API;
+import src.Maze.Maze;
 
 public class Main {    
     private static final String mouseName = API.getMouseName();
@@ -16,7 +17,7 @@ public class Main {
                 API.turnLeft();
             }
             while (API.wallFront()) {
-                API.setWall(API.getMousePosition()[0], API.getMousePosition()[1], API.getMouseDirection());
+                API.setWall(Maze.getMousePosition()[0], Maze.getMousePosition()[1], Maze.getMouseDirection());
                 API.turnRight45();
             }
             API.moveForward();

@@ -1,26 +1,22 @@
 package src.API;
 
 import java.util.Scanner;
+import src.Maze.Maze; // Import Maze class
 
 /**
  * API class provides methods to interact with the maze and control the mouse.
  */
 public class API {
     private static final Scanner scanner = new Scanner(System.in);
-    private static final String mouseName = "Ratawoulfie";
-    private static int[] mousePosition = { 0, 0 }; // x, y
-    private static int mouseDirection = 0; // n(0), ne(1), e(2), se(3), s(4), sw(5), w(6), nw(7)
 
-    /* Mouse name getter */
-    public static String getMouseName() {
-        return mouseName;
-    }
-
-    /* Command reponse getters */
+    /*
+    ----------------------------------------------------------------
+    Internal helper methods for reading from simulator
+    ----------------------------------------------------------------
+    */
     private static String getResponse(String commandUsed) {
-        System.out.println(commandUsed);
-        String programResponse = scanner.nextLine();
-        return programResponse;
+        System.out.println(commandUsed);           // Ask simulator
+        return scanner.nextLine();                 // Read response
     }
 
     private static int getIntegerResponse(String commandUsed) {
@@ -31,119 +27,94 @@ public class API {
         return getResponse(commandUsed).equals("true");
     }
 
-    /* Maze dimensions */
-    public static int mazeWidth() {
-        return API.getIntegerResponse("mazeWidth");
-    }
-
-    public static int mazeHeight() {
-        return API.getIntegerResponse("mazeHeight");
-    }
-
-    /* Walls around mouse booleans */
-    public static boolean wallFront() {
-        return API.getBooleanResponse("wallFront");
-    }
-
-    public static boolean wallRight() {
-        return API.getBooleanResponse("wallRight");
-    }
-
-    public static boolean wallLeft() {
-        return API.getBooleanResponse("wallLeft");
-    }
-
-    /* Mouse movement commands; "ack" if successful, "crash" otherwise */
     private static boolean getAck(String commandUsed) {
         return getResponse(commandUsed).equals("ack");
     }
 
+    /*
+    ----------------------------------------------------------------
+    Maze dimension queries
+    ----------------------------------------------------------------
+    */
+    public static int mazeWidth() {
+        return getIntegerResponse("mazeWidth");
+    }
+
+    public static int mazeHeight() {
+        return getIntegerResponse("mazeHeight");
+    }
+
+    /*
+    ----------------------------------------------------------------
+    Wall queries
+    ----------------------------------------------------------------
+    */
+    public static boolean wallFront() {
+        return getBooleanResponse("wallFront");
+    }
+
+    public static boolean wallRight() {
+        return getBooleanResponse("wallRight");
+    }
+
+    public static boolean wallLeft() {
+        return getBooleanResponse("wallLeft");
+    }
+
+    /*
+    ----------------------------------------------------------------
+    Mouse movement commands
+    ----------------------------------------------------------------
+    */
     public static void moveForward() {
-        boolean ack = API.getAck("moveForward");
+        boolean ack = getAck("moveForward");
 
-        // Adjusts mouse position
-        switch (getMouseDirection()) {
-            case "n":
-                mousePosition[1]++;
-                break;
-            case "ne":
-                mousePosition[0]++;
-                mousePosition[1]++;
-                break;
-            case "e":
-                mousePosition[0]++;
-                break;
-            case "se":
-                mousePosition[0]++;
-                mousePosition[1]--;
-                break;
-            case "s":
-                mousePosition[1]--;
-                break;
-            case "sw":
-                mousePosition[0]--;
-                mousePosition[1]--;
-                break;
-            case "w":
-                mousePosition[0]--;
-                break;
-            case "nw":
-                mousePosition[0]--;
-                mousePosition[1]++;
-                break;
-            default:
-                throw new IllegalStateException("Unexpected value: " + getMouseDirection());
-        }
-
-        if (!ack) {
+        if (ack) {
+            Maze.moveForwardLocal();
+        } else {
             throw new RuntimeException("Cannot move forward");
         }
     }
 
     public static void turnRight() {
-        API.getAck("turnRight");
-        turnHalfStepRight(2);
+        boolean ack = getAck("turnRight");
+        if (ack) {
+            Maze.turnRightLocal();
+        }
     }
 
     public static void turnLeft() {
-        API.getAck("turnLeft");
-        turnHalfStepLeft(2);
+        boolean ack = getAck("turnLeft");
+        if (ack) {
+            Maze.turnLeftLocal();
+        }
     }
 
     public static void turnRight45() {
-        API.getAck("turnRight45");
-        turnHalfStepRight(1);
+        boolean ack = getAck("turnRight45");
+        if (ack) {
+            Maze.turnRight45Local();
+        }
     }
 
     public static void turnLeft45() {
-        API.getAck("turnLeft45");
-        turnHalfStepLeft(1);
+        boolean ack = getAck("turnLeft45");
+        if (ack) {
+            Maze.turnLeft45Local();
+        }
     }
 
-    private static void turnHalfStepRight(int stepCount) {
-        mouseDirection = (mouseDirection + stepCount) % 8;
-    }
-
-    private static void turnHalfStepLeft(int stepCount) {
-        mouseDirection = (mouseDirection - stepCount + 8) % 8;
-    }
-
-    public static String getMouseDirection() {
-        String[] directions = { "n", "ne", "e", "se", "s", "sw", "w", "nw" };
-        return directions[mouseDirection];
-    }
-
-    public static int[] getMousePosition() {
-        return mousePosition;
-    }
-
-    /* Sets wall states */
+    /*
+    ----------------------------------------------------------------
+    Set / clear walls
+    ----------------------------------------------------------------
+    */
     public static void setWall(int x, int y, String direction) {
         switch (direction) {
-            case "n", "e", "s", "w" -> System.out.println("setWall " + x + " " + y + " " + direction);
+            case "n", "e", "s", "w" -> 
+                System.out.println("setWall " + x + " " + y + " " + direction);
             case "ne", "se", "sw", "nw" -> {
-                // System.out.println("setWall " + x + " " + y + " " + direction.charAt(0));
-                // System.out.println("setWall " + x + " " + y + " " + direction.charAt(1));
+                // We'll skip 45° setWall for now, as you mentioned
             }
             default -> throw new IllegalStateException("Unexpected value: " + direction);
         }
@@ -153,7 +124,11 @@ public class API {
         System.out.println("clearWall " + x + " " + y + " " + direction);
     }
 
-    /* Sets cell colors */
+    /*
+    ----------------------------------------------------------------
+    Cell color / text
+    ----------------------------------------------------------------
+    */
     public static void setColor(int x, int y, char color) {
         System.out.println("setColor " + x + " " + y + " " + color);
     }
@@ -166,7 +141,6 @@ public class API {
         System.out.println("clearAllColor");
     }
 
-    /* Sets cell texts */
     public static void setText(int x, int y, String text) {
         System.out.println("setText " + x + " " + y + " " + text);
     }
@@ -179,12 +153,16 @@ public class API {
         System.out.println("clearAllText");
     }
 
-    /* Indicators for mouse reset */
+    /*
+    ----------------------------------------------------------------
+    Reset booleans
+    ----------------------------------------------------------------
+    */
     public static boolean wasReset() {
-        return API.getBooleanResponse("wasReset");
+        return getBooleanResponse("wasReset");
     }
 
     public static void ackReset() {
-        API.getAck("ackReset");
+        getAck("ackReset");
     }
 }
