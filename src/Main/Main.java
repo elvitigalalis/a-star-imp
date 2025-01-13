@@ -4,7 +4,7 @@ import src.API.API;
 import src.Maze.Maze;
 
 public class Main {    
-    private static final String mouseName = API.getMouseName();
+    private static final String mouseName = Maze.getMouseName();
     public static void main(String[] args) {
         log("Running " + mouseName + "...");
         API.setColor(0, 0, 'G');
