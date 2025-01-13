@@ -111,10 +111,12 @@ public class API {
     */
     public static void setWall(int x, int y, String direction) {
         switch (direction) {
-            case "n", "e", "s", "w" -> 
+            case "n", "e", "s", "w" -> {
                 System.out.println("setWall " + x + " " + y + " " + direction);
+                Maze.setWallLocal(x, y, direction);
+            }
             case "ne", "se", "sw", "nw" -> {
-                // We'll skip 45° setWall for now, as you mentioned
+                // FIXME: I need to add this later
             }
             default -> throw new IllegalStateException("Unexpected value: " + direction);
         }

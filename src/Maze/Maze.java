@@ -1,11 +1,43 @@
 package src.Maze;
 
+import src.API.API;
+
 public class Maze {
+    // Maze specifications
+    public static final int maxRows = API.mazeHeight();
+    public static final int maxCols = API.mazeWidth();
+    private static final int[][] mazeGrid = new int[maxRows][maxCols];
+    private static final int[][][] mazeWalls = new int[maxRows][maxCols][4];
     // Mouse name/position/direction in one place
     private static final String mouseName = "Ratawoulfie";
     private static int[] mousePosition = { 0, 0 }; // x, y
     // 0=n,1=ne,2=e,3=se,4=s,5=sw,6=w,7=nw
+    public static int[][] mouseDirections = {{-1, 0},  {-1, 1}, { 0, 1},  { 1, 1}, { 1, 0},  { 1,-1}, { 0,-1},  {-1,-1}};
     private static int mouseDirection = 0;
+
+    /*
+    ----------------------------------------------------
+    MAZE GRID LOGIC
+    ----------------------------------------------------
+     */
+    public static int[][] getMaze() {
+        return mazeGrid;
+    }
+
+    public static boolean validCell(int x, int y) {
+        return x >= 0 && x < maxRows && y >= 0 && y < maxCols;
+    }
+
+    public static void setWallLocal(int x, int y, String direction) {
+        switch (direction) {
+            case "n" -> mazeWalls[x][y][0] = 1;
+            case "e" -> mazeWalls[x][y][1] = 1;
+            case "s" -> mazeWalls[x][y][2] = 1;
+            case "w" -> mazeWalls[x][y][3] = 1;
+            default -> throw new IllegalArgumentException("Invalid direction: " + direction);
+        }
+    }
+
 
     /*
     ----------------------------------------------------
