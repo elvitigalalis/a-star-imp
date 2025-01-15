@@ -1,33 +1,39 @@
 package src.API;
 
 import java.util.Scanner;
-import src.Maze.Maze; // Import Maze class
+
+import src.Algorithm.Maze.MouseLocal;
 
 /**
  * API class provides methods to interact with the maze and control the mouse.
  */
 public class API {
-    private static final Scanner scanner = new Scanner(System.in);
+    private final Scanner input;
+    private MouseLocal mouseLocal;
 
+    public API(MouseLocal mouseLocal) {
+        input = new Scanner(System.in);
+        this.mouseLocal = mouseLocal;
+    }
     /*
     ----------------------------------------------------------------
     Internal helper methods for reading from simulator
     ----------------------------------------------------------------
     */
-    private static String getResponse(String commandUsed) {
+    private String getResponse(String commandUsed) {
         System.out.println(commandUsed);           // Ask simulator
-        return scanner.nextLine();                 // Read response
+        return input.nextLine();                 // Read response
     }
 
-    private static int getIntegerResponse(String commandUsed) {
+    private int getIntegerResponse(String commandUsed) {
         return Integer.parseInt(getResponse(commandUsed));
     }
 
-    private static boolean getBooleanResponse(String commandUsed) {
+    private boolean getBooleanResponse(String commandUsed) {
         return getResponse(commandUsed).equals("true");
     }
 
-    private static boolean getAck(String commandUsed) {
+    private boolean getAck(String commandUsed) {
         return getResponse(commandUsed).equals("ack");
     }
 
@@ -36,11 +42,11 @@ public class API {
     Maze dimension queries
     ----------------------------------------------------------------
     */
-    public static int mazeWidth() {
+    public int mazeWidth() {
         return getIntegerResponse("mazeWidth");
     }
 
-    public static int mazeHeight() {
+    public int mazeHeight() {
         return getIntegerResponse("mazeHeight");
     }
 
@@ -49,15 +55,15 @@ public class API {
     Wall queries
     ----------------------------------------------------------------
     */
-    public static boolean wallFront() {
+    public boolean wallFront() {
         return getBooleanResponse("wallFront");
     }
 
-    public static boolean wallRight() {
+    public boolean wallRight() {
         return getBooleanResponse("wallRight");
     }
 
-    public static boolean wallLeft() {
+    public boolean wallLeft() {
         return getBooleanResponse("wallLeft");
     }
 
@@ -66,41 +72,41 @@ public class API {
     Mouse movement commands
     ----------------------------------------------------------------
     */
-    public static void moveForward() {
+    public void moveForward() {
         boolean ack = getAck("moveForward");
 
         if (ack) {
-            Maze.moveForwardLocal();
+            mouseLocal.moveForwardLocal();
         } else {
             throw new RuntimeException("Cannot move forward");
         }
     }
 
-    public static void turnRight() {
+    public void turnRight() {
         boolean ack = getAck("turnRight");
         if (ack) {
-            Maze.turnRightLocal();
+            mouseLocal.turnMouseLocal(0, 2);
         }
     }
 
-    public static void turnLeft() {
+    public void turnLeft() {
         boolean ack = getAck("turnLeft");
         if (ack) {
-            Maze.turnLeftLocal();
+            mouseLocal.turnMouseLocal(2, 0);
         }
     }
 
-    public static void turnRight45() {
+    public void turnRight45() {
         boolean ack = getAck("turnRight45");
         if (ack) {
-            Maze.turnRight45Local();
+            mouseLocal.turnMouseLocal(0, 1);
         }
     }
 
-    public static void turnLeft45() {
+    public void turnLeft45() {
         boolean ack = getAck("turnLeft45");
         if (ack) {
-            Maze.turnLeft45Local();
+            mouseLocal.turnMouseLocal(1, 0);
         }
     }
 
@@ -109,20 +115,22 @@ public class API {
     Set / clear walls
     ----------------------------------------------------------------
     */
-    public static void setWall(int x, int y, String direction) {
+    public void setWall(int x, int y, String direction) {
         switch (direction) {
             case "n", "e", "s", "w" -> {
                 System.out.println("setWall " + x + " " + y + " " + direction);
-                Maze.setWallLocal(x, y, direction);
+                mouseLocal.addWallLocal(x, y, mouseLocal.getDirectionOffset(direction));
             }
             case "ne", "se", "sw", "nw" -> {
-                // FIXME: I need to add this later
+                System.out.println("setWall " + x + " " + y + " " + direction.charAt(0));
+                System.out.println("setWall " + x + " " + y + " " + direction.charAt(1));
+                mouseLocal.addWallLocal(x, y, mouseLocal.getDirectionOffset(direction));
             }
             default -> throw new IllegalStateException("Unexpected value: " + direction);
         }
     }
 
-    public static void clearWall(int x, int y, String direction) {
+    public void clearWall(int x, int y, String direction) {
         System.out.println("clearWall " + x + " " + y + " " + direction);
     }
 
@@ -131,27 +139,27 @@ public class API {
     Cell color / text
     ----------------------------------------------------------------
     */
-    public static void setColor(int x, int y, char color) {
+    public void setColor(int x, int y, char color) {
         System.out.println("setColor " + x + " " + y + " " + color);
     }
 
-    public static void clearColor(int x, int y) {
+    public void clearColor(int x, int y) {
         System.out.println("clearColor " + x + " " + y);
     }
 
-    public static void clearAllColor() {
+    public void clearAllColor() {
         System.out.println("clearAllColor");
     }
 
-    public static void setText(int x, int y, String text) {
+    public void setText(int x, int y, String text) {
         System.out.println("setText " + x + " " + y + " " + text);
     }
 
-    public static void clearText(int x, int y) {
+    public void clearText(int x, int y) {
         System.out.println("clearText " + x + " " + y);
     }
 
-    public static void clearAllText() {
+    public void clearAllText() {
         System.out.println("clearAllText");
     }
 
@@ -160,11 +168,11 @@ public class API {
     Reset booleans
     ----------------------------------------------------------------
     */
-    public static boolean wasReset() {
+    public boolean wasReset() {
         return getBooleanResponse("wasReset");
     }
 
-    public static void ackReset() {
+    public void ackReset() {
         getAck("ackReset");
     }
 }
