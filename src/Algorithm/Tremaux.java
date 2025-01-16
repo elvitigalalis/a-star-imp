@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Stack;
 
+import src.API.API;
 import src.Algorithm.Maze.Cell;
 import src.Algorithm.Maze.MouseLocal;
 
@@ -18,7 +19,7 @@ public class Tremaux {
      * @param goalCell  The target cell to reach.
      * @return A list of cells representing the path from the start to the goal, or null if no path is found.
      */
-    public List<Cell> findTremauxPath(MouseLocal mouse, Cell goalCell) {
-        return null;
+    public void tremauxExplore(MouseLocal mouse, API api) {
+        
     }
 }

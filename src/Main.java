@@ -14,24 +14,27 @@ public class Main {
     private static MouseLocal mouse;
     private static API api;
     private static AStar aStarAlgoFinder;
-    private static Tremaux tremauxAlgoFinder;
+    private static Tremaux tremauxExplorer;
 
     public static void main(String[] args) {
         mouse = new MouseLocal();
         api = new API(mouse);
         aStarAlgoFinder = new AStar();
-        tremauxAlgoFinder = new Tremaux();
+        tremauxExplorer = new Tremaux();
 
         addEdgesAsWalls();
 
         log("Running " + Constants.MouseConstants.mouseName + "...\n");
-        api.setColor(0, 0, 'G');
-        api.setText(0, 0, "Start");
+        api.setColor(0, 0, Constants.MazeConstants.startCellColor);
+        api.setText(0, 0, Constants.MazeConstants.startCellText);
+        api.setColor(Constants.MazeConstants.goalPositionX, Constants.MazeConstants.goalPositionY, Constants.MazeConstants.goalCellColor);
+        api.setText(Constants.MazeConstants.goalPositionX, Constants.MazeConstants.goalPositionY, Constants.MazeConstants.goalCellText);
 
         Cell startCell = mouse.getMousePosition();
         Cell goalCell = mouse.getCell(Constants.MazeConstants.goalPositionX, Constants.MazeConstants.goalPositionY);
 
-        traversePathIteratively(mouse, goalCell, "Tremaux", "goal");
+        // tremauxExplorer.tremauxExplore(mouse, api);
+        traversePathIteratively(mouse, goalCell, "A*", "goal");
         traversePathIteratively(mouse, startCell, "A*", "return");
         traversePathIteratively(mouse, goalCell, "A*", "fast");
 
@@ -91,9 +94,6 @@ public class Main {
             // If the mouse reaches the goal, then break out of the loop.
             if (mouseCurrentCell.getX() == goalCell.getX() && mouseCurrentCell.getY() == goalCell.getY()) {
                 // log("Reached GOAL.");
-                api.setColor(mouseCurrentCell.getX(), mouseCurrentCell.getY(), 'G');
-                api.setText(mouseCurrentCell.getX(), mouseCurrentCell.getY(), "Goal");
-
                 break;
             }
 
@@ -101,8 +101,8 @@ public class Main {
             detectAndSetWalls(mouse, api);
 
             // Gets the path to the goal.
-            List<Cell> algorithmPath = algorithm.equals("A*") ? aStarAlgoFinder.findAStarPath(mouse, goalCell)
-                    : tremauxAlgoFinder.findTremauxPath(mouse, goalCell);
+            List<Cell> algorithmPath = algorithm.equals("A*") ? aStarAlgoFinder.findAStarPath(mouse, goalCell) : null;
+                    // : tremauxExplorer.findTremauxPath(mouse, goalCell);
 
             // Checks if path is null.
             if (algorithmPath == null) {
