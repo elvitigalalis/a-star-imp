@@ -81,9 +81,15 @@ public class MouseLocal {
      *         (left or right).
      */
     public int[] obtainHalfStepCount(int[] newDirection) {
-        int halfSteps = findDirectionIndexInPossibleDirections(newDirection)
-                - findDirectionIndexInPossibleDirections(mouseDirection);
-        int direction = (halfSteps > 0) ? 1 : -1; // 1 signifies right, -1 signifies left.
+        int halfStepsRight = (Constants.MouseConstants.possibleMouseDirections.length + findDirectionIndexInPossibleDirections(newDirection)
+                - findDirectionIndexInPossibleDirections(mouseDirection)) % Constants.MouseConstants.possibleMouseDirections.length;
+        int halfStepsLeft = (Constants.MouseConstants.possibleMouseDirections.length + findDirectionIndexInPossibleDirections(mouseDirection)
+                - findDirectionIndexInPossibleDirections(newDirection)) % Constants.MouseConstants.possibleMouseDirections.length;
+    
+        System.err.println("Half steps right: " + halfStepsRight + " Half steps left: " + halfStepsLeft);
+        int halfSteps = Math.min(halfStepsRight, halfStepsLeft);
+
+        int direction = (halfStepsRight < halfStepsLeft) ? 1 : -1; // 1 signifies right, -1 signifies left.
 
         return new int[] { Math.abs(halfSteps), direction };
 
@@ -167,7 +173,7 @@ public class MouseLocal {
         int[] direction = new int[] { cell2.getX() - cell1.getX(), cell2.getY() - cell1.getY() };
         try {
             // Four cardinal directions are supported.
-            System.err.println("Wall exists between cells: " + cell1.getWallExists(direction));
+            // System.err.println("Wall exists between cells: " + cell1.getWallExists(direction));
             return !cell1.getWallExists(direction);
         } catch (IllegalArgumentException e) {
             // // If part of the eight cardinal directions, but not the four cardinal

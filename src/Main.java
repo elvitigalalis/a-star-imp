@@ -24,15 +24,50 @@ public class Main {
         api.setColor(0, 0, 'G');
         api.setText(0, 0, "Start");
 
+        findGoalIncrementalAStar(mouse, mouse.getCell(Constants.MazeConstants.goalPositionX, Constants.MazeConstants.goalPositionY), "goal");
+        
+        // api.clearAllColor();
+        // api.clearAllText();
+        api.setColor(mouse.getMousePosition().getX(), mouse.getMousePosition().getY(), 'R');
+
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        
+        findGoalIncrementalAStar(mouse, mouse.getCell(0, 0), "return");
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        findGoalIncrementalAStar(mouse, mouse.getCell(Constants.MazeConstants.goalPositionX, Constants.MazeConstants.goalPositionY), "fast");
+        
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        findGoalIncrementalAStar(mouse, mouse.getCell(0, 0), "return");
+    }
+
+    private static void findGoalIncrementalAStar(MouseLocal mouse, Cell goalCell, String mode) {
         while (true) {
             // Creates a cell holding the mouse's current position.
             Cell mouseCurrentCell = mouse.getMousePosition();
             // log("Mouse Position: (" + mouseCurrentCell.getX() + ", " + mouseCurrentCell.getY() + ")");
 
             // If the mouse reaches the goal, then break out of the loop.
-            if (mouseCurrentCell.getX() == Constants.MazeConstants.goalPositionX
-                    && mouseCurrentCell.getY() == Constants.MazeConstants.goalPositionY) {
+            if (mouseCurrentCell.getX() == goalCell.getX()
+                    && mouseCurrentCell.getY() == goalCell.getY()) {
                 log("Reached goal. :)");
+                api.setColor(mouseCurrentCell.getX(), mouseCurrentCell.getY(), 'G');
+                api.setText(mouseCurrentCell.getX(), mouseCurrentCell.getY(), "Goal");
+
                 break;
             }
 
@@ -52,7 +87,7 @@ public class Main {
 
             // Gets the A* path to the goal.
             List<Cell> optimalPath = aStarAlgoFinder.findAStarPath(mouse, mouseCurrentCell,
-                    mouse.getCell(Constants.MazeConstants.goalPositionX, Constants.MazeConstants.goalPositionY));
+                    goalCell);
 
             if (optimalPath == null) {
                 log("No path found to goal. Maze is blocked or no route!");
@@ -72,7 +107,8 @@ public class Main {
             api.moveForward();
             log("Mouse position: (" + mouse.getMousePosition().getX() + ", " + mouse.getMousePosition().getY() + ")");
             log("Mouse direction: " + mouse.getDirectionAsString(mouse.getMouseDirection()));
-            api.setColor(mouse.getMousePosition().getX(), mouse.getMousePosition().getY(), 'Y');
+            api.setColor(mouse.getMousePosition().getX(), mouse.getMousePosition().getY(), (mode.equals("goal") ? 'Y' : (mode.equals("return")) ? 'C' : 'O'));
+            api.setText(mouse.getMousePosition().getX(), mouse.getMousePosition().getY(), (mode.equals("goal") ? "v" : (mode.equals("return")) ? "r" : "%"));
 
             // Moves the mouse to the next cell(s) in the path.
             // for (int i = 1; i < optimalPath.size(); i++) {

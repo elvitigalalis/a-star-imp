@@ -27,7 +27,7 @@ public class Constants {
          * 
          * Goal positions can be randomized, but are set at 8,8 for now (center of the maze).
          */
-        public static final int goalPositionX = 7;
-        public static final int goalPositionY = 7;
+        public static final int goalPositionX = 8;
+        public static final int goalPositionY = 8;
     }
 }
