@@ -12,6 +12,7 @@ public class Main {
     private static MouseLocal mouse;
     private static API api;
     private static AStar aStarAlgoFinder;
+
     public static void main(String[] args) {
         mouse = new MouseLocal();
         api = new API(mouse);
@@ -19,25 +20,27 @@ public class Main {
 
         addEdgesAsWalls();
 
-        log("Running " + Constants.MouseConstants.mouseName + "...");
+        log("Running " + Constants.MouseConstants.mouseName + "...\n");
         api.setColor(0, 0, 'G');
         api.setText(0, 0, "Start");
 
-        while(true) {
+        while (true) {
             // Creates a cell holding the mouse's current position.
             Cell mouseCurrentCell = mouse.getMousePosition();
-            log("Mouse Position: (" + mouseCurrentCell.getX() + ", " + mouseCurrentCell.getY() + ")");
+            // log("Mouse Position: (" + mouseCurrentCell.getX() + ", " + mouseCurrentCell.getY() + ")");
 
             // If the mouse reaches the goal, then break out of the loop.
-            if(mouseCurrentCell.getX() == Constants.MazeConstants.goalPositionX && mouseCurrentCell.getY() == Constants.MazeConstants.goalPositionY) {
+            if (mouseCurrentCell.getX() == Constants.MazeConstants.goalPositionX
+                    && mouseCurrentCell.getY() == Constants.MazeConstants.goalPositionY) {
                 log("Reached goal. :)");
                 break;
             }
 
-            log(mouse.localMazeToString());
+            // log(mouse.localMazeToString());
             // Checks if there is a wall in front, left, or right of the mouse.
             if (api.wallFront()) {
-                api.setWall(mouseCurrentCell.getX(), mouseCurrentCell.getY(), mouse.getDirectionAsString(mouse.getMouseDirection()));
+                api.setWall(mouseCurrentCell.getX(), mouseCurrentCell.getY(),
+                        mouse.getDirectionAsString(mouse.getMouseDirection()));
             }
             if (api.wallLeft()) {
                 api.setWall(mouseCurrentCell.getX(), mouseCurrentCell.getY(), mouse.getDirectionToTheLeft());
@@ -45,30 +48,49 @@ public class Main {
             if (api.wallRight()) {
                 api.setWall(mouseCurrentCell.getX(), mouseCurrentCell.getY(), mouse.getDirectionToTheRight());
             }
-            log(mouse.localMazeToString());
+            // log(mouse.localMazeToString());
 
             // Gets the A* path to the goal.
-            List<Cell> optimalPath = aStarAlgoFinder.findAStarPath(mouse, mouseCurrentCell, mouse.getCell(Constants.MazeConstants.goalPositionX, Constants.MazeConstants.goalPositionY));
+            List<Cell> optimalPath = aStarAlgoFinder.findAStarPath(mouse, mouseCurrentCell,
+                    mouse.getCell(Constants.MazeConstants.goalPositionX, Constants.MazeConstants.goalPositionY));
 
             if (optimalPath == null) {
                 log("No path found to goal. Maze is blocked or no route!");
+                System.err.println("Cell: " + mouseCurrentCell.toString());
+                System.err.print(mouse.localMazeToString());
                 break;
             }
 
             log("Path found, length: " + optimalPath.size());
             for (Cell step : optimalPath) {
-                log(step.toString());
+            log(step.toString());
             }
 
+            Cell nextCell = mouse.getCell(optimalPath.get(0).getX(), optimalPath.get(0).getY());
+            log("Next cell coordinates: (" + nextCell.getX() + ", " + nextCell.getY() + ")");
+            turnMouseToNextCell(mouseCurrentCell, nextCell);
+            api.moveForward();
+            log("Mouse position: (" + mouse.getMousePosition().getX() + ", " + mouse.getMousePosition().getY() + ")");
+            log("Mouse direction: " + mouse.getDirectionAsString(mouse.getMouseDirection()));
+            api.setColor(mouse.getMousePosition().getX(), mouse.getMousePosition().getY(), 'Y');
+
             // Moves the mouse to the next cell(s) in the path.
-            for (int i = 1; i < optimalPath.size(); i++) {
-                Cell currentCell = mouse.getCell(optimalPath.get(i - 1).getX(), optimalPath.get(i - 1).getY());
-                Cell nextCell = mouse.getCell(optimalPath.get(i).getX(), optimalPath.get(i).getY());
-                turnMouseToNextCell(currentCell, nextCell);
-                api.moveForward();
-                log("Mouse position: {" + mouse.getMousePosition().getX() + ", " + mouse.getMousePosition().getY() + "}");
-                api.setColor(mouse.getMousePosition().getX(), mouse.getMousePosition().getY(), 'Y');
-            }
+            // for (int i = 1; i < optimalPath.size(); i++) {
+            // Cell currentCell = mouse.getCell(optimalPath.get(i - 1).getX(),
+            // optimalPath.get(i - 1).getY());
+            // Cell nextCell = mouse.getCell(optimalPath.get(i).getX(),
+            // optimalPath.get(i).getY());
+            // log("Next cell coordinates: (" + nextCell.getX() + ", " + nextCell.getY() +
+            // ")");
+            // turnMouseToNextCell(currentCell, nextCell);
+            // api.moveForward();
+            // log("Mouse position: (" + mouse.getMousePosition().getX() + ", " +
+            // mouse.getMousePosition().getY() + ")");
+            // log("Mouse direction: " +
+            // mouse.getDirectionAsString(mouse.getMouseDirection()));
+            // api.setColor(mouse.getMousePosition().getX(),
+            // mouse.getMousePosition().getY(), 'Y');
+            // }
         }
     }
 
@@ -76,31 +98,34 @@ public class Main {
      * Turns the mouse to face the next cell in the path.
      * 
      * @param currentCell The current cell the mouse is in.
-     * @param nextCell The next cell the mouse will move to.
+     * @param nextCell    The next cell the mouse will move to.
      */
     private static void turnMouseToNextCell(Cell currentCell, Cell nextCell) {
-        int[] directionNeeded = new int[]{nextCell.getX() - currentCell.getX(), nextCell.getY() - currentCell.getY()};
-        int[] halfStepsNeeded = mouse.turnMouseLocal(directionNeeded);
+        int[] directionNeeded = new int[] { nextCell.getX() - currentCell.getX(),
+                nextCell.getY() - currentCell.getY() };
+        log("Direction needed: " + mouse.getDirectionAsString(directionNeeded) + "\n");
+        int[] halfStepsNeeded = mouse.obtainHalfStepCount(directionNeeded);
 
-        // Turns the mouse to face the next cell in the most optimal way (turning left vs. right AND 45 degrees or 90 degrees).
+        // Turns the mouse to face the next cell in the most optimal way (turning left
+        // vs. right AND 45 degrees or 90 degrees).
         if (halfStepsNeeded[0] % 2 == 0) {
             for (int i = 0; i < halfStepsNeeded[0] / 2; i++) {
                 if (halfStepsNeeded[1] == 1) {
                     api.turnRight();
-                    log("Turning right...");
+                    log("Turning right 90 deg...");
                 } else if (halfStepsNeeded[1] == -1) {
                     api.turnLeft();
-                    log("Turning left...");
+                    log("Turning left 90 deg...");
                 }
             }
         } else {
             for (int i = 0; i < halfStepsNeeded[0]; i++) {
                 if (halfStepsNeeded[1] == 1) {
                     api.turnRight45();
-                    log("Turning right 45 degrees...");
+                    log("Turning right 45 deg...");
                 } else if (halfStepsNeeded[1] == -1) {
                     api.turnLeft45();
-                    log("Turning left 45 degrees...");
+                    log("Turning left 45 deg...");
                 }
             }
         }

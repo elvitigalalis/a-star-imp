@@ -78,6 +78,7 @@ public class API {
         if (ack) {
             mouseLocal.moveForwardLocal();
         } else {
+            System.err.print(mouseLocal.localMazeToString());
             throw new RuntimeException("Cannot move forward");
         }
     }

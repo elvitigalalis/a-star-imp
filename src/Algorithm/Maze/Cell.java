@@ -225,9 +225,10 @@ public class Cell {
      * Returns a String representation of all variables/Objects in the Cell class.
      */
     public String toString() {
-        return "Cell(" + x + "," + y + ") {\n\tcostFromStart=" + costFromStart + ", totalCost=" + totalCost
-                + ", \n\tnorthWall=" + northWall + ", eastWall=" + eastWall + ", \n\tsouthWall=" + southWall + ", westWall="
-                + westWall + "\n\t  }";
+        // return "Cell(" + x + "," + y + ") {\n\tcostFromStart=" + costFromStart + ", totalCost=" + totalCost
+        //         + ", \n\tnorthWall=" + northWall + ", eastWall=" + eastWall + ", \n\tsouthWall=" + southWall + ", westWall="
+        //         + westWall + "\n\t  }";
+        return "Cell(" + x + "," + y + ") [N=" + northWall + ", E=" + eastWall + ", S=" + southWall + ", W=" + westWall + "]";
     }
 
     public static void main(String[] args) {
@@ -273,7 +274,8 @@ public class Cell {
         }
 
         public String toString() {
-            return "Wall{exists=" + exists + ", isShared=" + isShared + "}";
+            // return "Wall{exists=" + exists + ", isShared=" + isShared + "}";
+            return String.valueOf(exists);
         }
     }
 }

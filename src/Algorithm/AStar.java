@@ -15,6 +15,7 @@ public class AStar {
     }
 
     public List<Cell> findAStarPath(MouseLocal mouse, Cell currentCell, Cell goalCell) {
+        resetCosts(mouse);
         // Creates a priority queue to store discovered, to-be-processed cells sorted
         // with the lowest total cost first in the queue.
         PriorityQueue<Cell> discoveredCell = new PriorityQueue<Cell>(
@@ -39,7 +40,7 @@ public class AStar {
         // to total cost because the cost from start is zero: 0 + heuristic = heuristic.
         Cell startCell = mouse.getCell(currentCell.getX(), currentCell.getY());
         startCell.setCostFromStart(0.0);
-        startCell.setTotalCost(heuristic(currentCell.getX(), currentCell.getY(), goalCell.getX(), currentCell.getY()));
+        startCell.setTotalCost(heuristic(currentCell.getX(), currentCell.getY(), goalCell.getX(), goalCell.getY()));
         // Adds the starting cell to the priority queue so all paths from this cell to
         // the goal can be evaluated ("processing...").
         discoveredCell.add(startCell);
@@ -60,7 +61,7 @@ public class AStar {
             // If the cell is the goal cell, reconstruct the path taken (in Cells) to get to
             // the goal.
             if (toBeProcessedCell.getX() == goalCell.getX() && toBeProcessedCell.getY() == goalCell.getY()) {
-                return constructPath(toBeProcessedCell);
+                return constructPath(currentCell, toBeProcessedCell);
             }
 
             // For each and every possible direction the mouse can move, evaluate the cost
@@ -79,6 +80,7 @@ public class AStar {
                 }
                 // If there is a wall blocking travel between the cells, skip it.
                 Cell neighboringCell = mouse.getCell(neighboringX, neighboringY);
+                // System.err.println("Neighboring cell: " + neighboringCell);
                 if (!mouse.canMoveBetweenCells(toBeProcessedCell, neighboringCell)) {
                     continue;
                 }
@@ -104,6 +106,16 @@ public class AStar {
         return null; // No path found (the goal is never reached so construct path is not called).
     }
 
+    public static void resetCosts(MouseLocal mouse) {
+        for (int x = 0; x < Constants.MazeConstants.numCols; x++) {
+            for (int y = 0; y < Constants.MazeConstants.numRows; y++) {
+                Cell cell = mouse.getCell(x, y);
+                cell.setCostFromStart(Double.POSITIVE_INFINITY);
+                cell.setTotalCost(Double.POSITIVE_INFINITY);
+            }
+        }
+    }
+
     /**
      * Calculates the octile heuristic from one cell to the goal cell.
      * 
@@ -125,11 +137,11 @@ public class AStar {
      * @param goalCell The goal cell.
      * @return The path taken from the starting cell to the goal cell as a list from start cell to goal cell.
      */
-    private static List<Cell> constructPath(Cell goalCell) {
+    private static List<Cell> constructPath(Cell startingCell, Cell goalCell) {
         // Creates an array list to append the cells taken to reach goal (from goal to start).
         List<Cell> pathToGoal = new ArrayList<>();
         Cell pointerCell = goalCell;
-        while (pointerCell != null) {
+        while (pointerCell != startingCell) {
             pathToGoal.add(pointerCell);
             pointerCell = pointerCell.getPrevCellInPath();
         }

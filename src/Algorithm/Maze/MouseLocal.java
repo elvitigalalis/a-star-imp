@@ -80,7 +80,7 @@ public class MouseLocal {
      * @return An array containing the # of half steps and the direction to turn
      *         (left or right).
      */
-    private int[] obtainHalfStepCount(int[] newDirection) {
+    public int[] obtainHalfStepCount(int[] newDirection) {
         int halfSteps = findDirectionIndexInPossibleDirections(newDirection)
                 - findDirectionIndexInPossibleDirections(mouseDirection);
         int direction = (halfSteps > 0) ? 1 : -1; // 1 signifies right, -1 signifies left.
@@ -138,10 +138,10 @@ public class MouseLocal {
         if (isValidCell(neighboringCellX, neighboringCellY)) {
             mazeCells[x][y].addWall(direction, true);
             mazeCells[neighboringCellX][neighboringCellY].addWall(new int[] { -direction[0], -direction[1] }, true);
-            System.err.println("Shared wall cell found :)");
+            // System.err.println("Shared wall cell found :)");
         } else {
             mazeCells[x][y].addWall(direction, false);
-            System.err.println("Edge cell found :)"); // FIXME: Remove later.
+            // System.err.println("Edge cell found :)"); // FIXME: Remove later.
         }
     }
 
@@ -167,6 +167,7 @@ public class MouseLocal {
         int[] direction = new int[] { cell2.getX() - cell1.getX(), cell2.getY() - cell1.getY() };
         try {
             // Four cardinal directions are supported.
+            System.err.println("Wall exists between cells: " + cell1.getWallExists(direction));
             return !cell1.getWallExists(direction);
         } catch (IllegalArgumentException e) {
             // // If part of the eight cardinal directions, but not the four cardinal
