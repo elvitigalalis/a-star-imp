@@ -242,10 +242,12 @@ public class Cell {
     private class Wall {
         boolean exists;
         boolean isShared;
+        boolean discovered;
 
         public Wall() {
             this.exists = false;
             this.isShared = false;
+            this.discovered = false;
         }
 
         /**
@@ -256,6 +258,10 @@ public class Cell {
         public void setExists(boolean isShared) {
             exists = true;
             this.isShared = isShared;
+        }
+
+        public void setDiscovered() {
+            discovered = true;
         }
 
         public boolean getExists() {

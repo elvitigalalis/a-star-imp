@@ -112,8 +112,8 @@ public class MouseLocal {
      * Moves the mouse forward in the direction it is currently in.
      */
     public void moveForwardLocal() {
-        int newXPosition = mousePosition[0] + mouseDirection[1];
-        int newYPosition = mousePosition[1] + mouseDirection[0];
+        int newXPosition = mousePosition[0] + mouseDirection[0];
+        int newYPosition = mousePosition[1] + mouseDirection[1];
 
         if (isValidCell(newXPosition, newYPosition)) {
             mousePosition = new int[] { newXPosition, newYPosition };
@@ -138,10 +138,10 @@ public class MouseLocal {
         if (isValidCell(neighboringCellX, neighboringCellY)) {
             mazeCells[x][y].addWall(direction, true);
             mazeCells[neighboringCellX][neighboringCellY].addWall(new int[] { -direction[0], -direction[1] }, true);
-            System.out.println("Shared wall cell found :)");
+            System.err.println("Shared wall cell found :)");
         } else {
             mazeCells[x][y].addWall(direction, false);
-            System.out.println("Edge cell found :)"); // FIXME: Remove later.
+            System.err.println("Edge cell found :)"); // FIXME: Remove later.
         }
     }
 
@@ -164,30 +164,41 @@ public class MouseLocal {
      * @return If the mouse can move between the two cells.
      */
     public boolean canMoveBetweenCells(Cell cell1, Cell cell2) {
-        int[] direction = new int[] { cell2.getX() - cell1.getX(), cell2.getY() - cell1.getY()};
+        int[] direction = new int[] { cell2.getX() - cell1.getX(), cell2.getY() - cell1.getY() };
         try {
             // Four cardinal directions are supported.
             return !cell1.getWallExists(direction);
         } catch (IllegalArgumentException e) {
-            // If part of the eight cardinal directions, but not the four cardinal directions, check the following:
-            System.err.println("Attempting diagonal movement calculations. :)");
-            boolean upperLDiagonalPossible = false;
-            boolean lowerLDiagonalPossible = false;
-            // E.g. direction is (-1, -1) --> check new cell's north and east walls as well as current cell's south and west walls.
-            // In this example, if either the new cell's north + current cell's west (upper diagonal) don't exist OR the new cell's east + current cell's south (lower diagonal) don't exist, the mouse can move diagonally.
-            int[] direction1ToCheck = new int[] {direction[0], 0}; // E.g. -1 0
-            int[] direction2ToCheck = new int[] {0, -direction[1]}; // E.g. 0 -1
-            upperLDiagonalPossible = (!cell1.getWallExists(direction1ToCheck) && !cell2.getWallExists(direction2ToCheck));
-            lowerLDiagonalPossible = (!cell2.getWallExists(new int[] {-direction1ToCheck[0], 0}) && !cell1.getWallExists(new int[] {0, -direction2ToCheck[1]}));
+            // // If part of the eight cardinal directions, but not the four cardinal
+            // // directions, check the following:
+            // System.err.println("Attempting diagonal movement calculations. :)");
+            // boolean upperLDiagonalPossible = false;
+            // boolean lowerLDiagonalPossible = false;
+            // // E.g. direction is (-1, -1) --> check new cell's north and east walls as well
+            // // as current cell's south and west walls.
+            // // In this example, if either the new cell's north + current cell's west (upper
+            // // diagonal) don't exist OR the new cell's east + current cell's south (lower
+            // // diagonal) don't exist, the mouse can move diagonally.
+            // int[] direction1ToCheck = new int[] { direction[0], 0 }; // E.g. -1 0
+            // int[] direction2ToCheck = new int[] { 0, -direction[1] }; // E.g. 0 -1
+            // upperLDiagonalPossible = (!cell1.getWallExists(direction1ToCheck)
+            //         && !cell2.getWallExists(direction2ToCheck));
+            // lowerLDiagonalPossible = (!cell2.getWallExists(new int[] { -direction1ToCheck[0], 0 })
+            //         && !cell1.getWallExists(new int[] { 0, -direction2ToCheck[1] }));
 
-            return upperLDiagonalPossible || lowerLDiagonalPossible;
+            // System.err.println("Upper L-Diagonal Possible: " + upperLDiagonalPossible + " Lower L-Diagonal Possible: "
+            //         + lowerLDiagonalPossible);
+            // return upperLDiagonalPossible || lowerLDiagonalPossible;
+            return false;
         }
     }
 
     /**
-     * Returns the direction offsets (an array of two integers) based on a given direction.
+     * Returns the direction offsets (an array of two integers) based on a given
+     * direction.
      * 
-     * @param direction The direction to get the offset for represented as a string (n, ne, e, se, s, sw, w, nw).
+     * @param direction The direction to get the offset for represented as a string
+     *                  (n, ne, e, se, s, sw, w, nw).
      * @return The direction offsets based on the given direction.
      */
     public int[] getDirectionOffset(String direction) {
@@ -196,7 +207,8 @@ public class MouseLocal {
     }
 
     /**
-     * Returns the direction as a string (n, ne, e, se, s, sw, w, nw) based on a given direction.
+     * Returns the direction as a string (n, ne, e, se, s, sw, w, nw) based on a
+     * given direction.
      * 
      * @param direction The direction as offset {+x, +y} to get the direction for.
      * @return The direction as a string (n, ne, e, se, s, sw, w, nw).
@@ -212,7 +224,8 @@ public class MouseLocal {
      * @return The direction to the left of the current mouse's direction.
      */
     public String getDirectionToTheLeft() {
-        int[] newDirection = Constants.MouseConstants.possibleMouseDirections[(findDirectionIndexInPossibleDirections(mouseDirection) + 6) % 8];
+        int[] newDirection = Constants.MouseConstants.possibleMouseDirections[(findDirectionIndexInPossibleDirections(
+                mouseDirection) + 6) % 8];
         return getDirectionAsString(newDirection);
     }
 
@@ -222,7 +235,8 @@ public class MouseLocal {
      * @return The direction to the right of the current mouse's direction.
      */
     public String getDirectionToTheRight() {
-        int[] newDirection = Constants.MouseConstants.possibleMouseDirections[(findDirectionIndexInPossibleDirections(mouseDirection) + 2) % 8];
+        int[] newDirection = Constants.MouseConstants.possibleMouseDirections[(findDirectionIndexInPossibleDirections(
+                mouseDirection) + 2) % 8];
         return getDirectionAsString(newDirection);
     }
 
@@ -255,29 +269,70 @@ public class MouseLocal {
         return mazeCells[x][y];
     }
 
+    /**
+     * Returns the mouse's current position in the maze.
+     * 
+     * @return The mouse's current position in the maze.
+     */
     public Cell getMousePosition() {
         return getCell(mousePosition[0], mousePosition[1]);
     }
 
-    // public String localMazeToString() {
-    // StringBuilder mazeString = new StringBuilder();
-    // int numRows = Constants.MazeConstants.numRows;
-    // int numCols = Constants.MazeConstants.numCols;
+    /**
+     * Returns a 2D representation of the maze as a string (formatted as a map).
+     * 
+     * @return A 2D representation of the maze as a string (formatted as a map).
+     */
+    public String localMazeToString() {
+        StringBuilder mazeString = new StringBuilder("Maze:\n");
+        int numRows = Constants.MazeConstants.numRows;
+        int numCols = Constants.MazeConstants.numCols;
 
-    // // 0 15 --> 15, 15 (Top row of the maze)
-    // for (int i = 0; i < numCols; i++) {
-    // mazeString.append("+");
-    // mazeString.append((mazeCells[i][15].getNorthWallExists()) ? "---" : " ");
-    // }
-    // mazeString.append("/n");
+        // 0 15 --> 15, 15 (Top row of the maze)
+        for (int i = 0; i < numCols; i++) {
+            mazeString.append("+---");
+        }
+        mazeString.append("+\n");
 
-    // // for (int i = 0; i < numCols; i++) {
-    // // mazeString.append
-    // // }
 
-    // // // 0 14 --> 15, 14
-    // // for()
+        for (int i = numRows - 1; i >= 0; i--) {
+            mazeString.append(printRow(i));
+            mazeString.append("\n");
+        }
 
-    // return mazeString.toString();
-    // }
+        return mazeString.toString();
+    }
+    
+    /**
+     * Prints the walls of a row of cells in a maze.
+     * 
+     * @param rowNumber The row number to print the walls of the cells of.
+     * @return The walls of the row of cells in the maze formatted as a map.
+     */
+    private String printRow(int rowNumber) {
+        StringBuilder rowString = new StringBuilder("|");
+        int numCols = Constants.MazeConstants.numCols;
+
+        for (int i = 0; i < numCols; i++) {
+            Cell cellAnalyzed = getCell(i, rowNumber);
+            if (cellAnalyzed.getWallExists(new int[] { 1, 0 })) {
+                rowString.append("   |");
+            } else {
+                rowString.append("    ");
+            }
+        }
+        rowString.append("\n");
+
+        for (int i = 0; i < numCols; i++) {
+            Cell cellAnalyzed = getCell(i, rowNumber);
+            if (cellAnalyzed.getWallExists(new int[] { 0, -1 })) {
+                rowString.append("+---");
+            } else {
+                rowString.append("+   ");
+            }
+        }
+        rowString.append("+\n");
+
+        return rowString.toString();
+    }
 }
