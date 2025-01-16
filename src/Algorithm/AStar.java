@@ -14,8 +14,11 @@ public class AStar {
     public AStar() {
     }
 
-    public List<Cell> findAStarPath(MouseLocal mouse, Cell currentCell, Cell goalCell) {
+    public List<Cell> findAStarPath(MouseLocal mouse, Cell goalCell) {
+        // Resets the costs of all cells to infinity.
         resetCosts(mouse);
+        Cell currentCell = mouse.getMousePosition();
+
         // Creates a priority queue to store discovered, to-be-processed cells sorted
         // with the lowest total cost first in the queue.
         PriorityQueue<Cell> discoveredCell = new PriorityQueue<Cell>(
@@ -49,6 +52,12 @@ public class AStar {
             // Retrieves the cell with the lowest total cost from the priority queue.
             Cell toBeProcessedCell = discoveredCell.poll();
 
+            // If the cell is the goal cell, reconstruct the path taken (in Cells) to get to
+            // the goal.
+            if (toBeProcessedCell.getX() == goalCell.getX() && toBeProcessedCell.getY() == goalCell.getY()) {
+                return constructPath(currentCell, toBeProcessedCell);
+            }
+
             // If the cell has already been processed, skip it.
             if (processedCells[toBeProcessedCell.getX()][toBeProcessedCell.getY()]) {
                 continue;
@@ -56,12 +65,6 @@ public class AStar {
             // Otherwise, mark the cell as processed.
             else {
                 processedCells[toBeProcessedCell.getX()][toBeProcessedCell.getY()] = true;
-            }
-
-            // If the cell is the goal cell, reconstruct the path taken (in Cells) to get to
-            // the goal.
-            if (toBeProcessedCell.getX() == goalCell.getX() && toBeProcessedCell.getY() == goalCell.getY()) {
-                return constructPath(currentCell, toBeProcessedCell);
             }
 
             // For each and every possible direction the mouse can move, evaluate the cost
@@ -123,7 +126,7 @@ public class AStar {
      * @param y1 The y-position of the current cell.
      * @param x2 The x-position of the goal cell.
      * @param y2 The y-position of the goal cell.
-     * @return
+     * @return The octile heuristic from the current cell to the goal cell.
      */
     private static double heuristic(int x1, int y1, int x2, int y2) {
         int distanceX = Math.abs(x1 - x2);

@@ -83,6 +83,17 @@ public class API {
         }
     }
 
+    public void moveForwardHalf() {
+        boolean ack = getAck("moveForwardHalf");
+
+        if (ack) {
+            // FIXME: Add half movement
+        } else {
+            System.err.print(mouseLocal.localMazeToString());
+            throw new RuntimeException("Cannot move forward half");
+        }
+    }
+
     public void turnRight() {
         boolean ack = getAck("turnRight");
         if (ack) {

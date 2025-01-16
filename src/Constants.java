@@ -1,7 +1,4 @@
 package src;
-
-import src.API.API;
-
 public class Constants {
     public static class MouseConstants {
         public static final String mouseName = "Ratawoulfie";

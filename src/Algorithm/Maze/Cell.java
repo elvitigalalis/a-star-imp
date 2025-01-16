@@ -7,6 +7,8 @@ public class Cell {
     int y;
     double costFromStart;
     double totalCost;
+    boolean isExplored;
+    private int tremauxCount;
     Wall northWall;
     Wall eastWall;
     Wall southWall;
@@ -26,6 +28,8 @@ public class Cell {
         this.y = y;
         this.costFromStart = Double.POSITIVE_INFINITY;
         this.totalCost = Double.POSITIVE_INFINITY;
+        this.isExplored = false;
+        this.tremauxCount = 0;
         this.northWall = new Wall();
         this.eastWall = new Wall();
         this.southWall = new Wall();
@@ -73,6 +77,47 @@ public class Cell {
      */
     public int getY() {
         return y;
+    }
+
+    /**
+     * Gets if the cell has been explored.
+     * 
+     * @return If the cell has been explored.
+     */
+    public boolean getIsExplored() {
+        return isExplored;
+    }
+
+    /**
+     * Sets the cell to be explored.
+     */
+    public void setIsExplored() {
+        isExplored = true;
+    }
+
+    /**
+     * Gets the traversal count of the cell.
+     * 
+     * @return The traversal count of the cell.
+     */
+    public int getTremauxCount() {
+        return tremauxCount;
+    }
+
+    /**
+     * Sets the traversal count of the cell.
+     * 
+     * @param tremauxCount The updated traversal count of the cell.
+     */
+    public void setTremauxCount(int tremauxCount) {
+        this.tremauxCount = tremauxCount;
+    }
+
+    /**
+     * Increments the traversal count of the cell.
+     */
+    public void incrementTremauxCount() {
+        tremauxCount++;
     }
 
     /**
@@ -243,12 +288,10 @@ public class Cell {
     private class Wall {
         boolean exists;
         boolean isShared;
-        boolean discovered;
 
         public Wall() {
             this.exists = false;
             this.isShared = false;
-            this.discovered = false;
         }
 
         /**
@@ -259,10 +302,6 @@ public class Cell {
         public void setExists(boolean isShared) {
             exists = true;
             this.isShared = isShared;
-        }
-
-        public void setDiscovered() {
-            discovered = true;
         }
 
         public boolean getExists() {
