@@ -86,7 +86,7 @@ public class MouseLocal {
         int halfStepsLeft = (Constants.MouseConstants.possibleMouseDirections.length + findDirectionIndexInPossibleDirections(mouseDirection)
                 - findDirectionIndexInPossibleDirections(newDirection)) % Constants.MouseConstants.possibleMouseDirections.length;
     
-        System.err.println("Half steps right: " + halfStepsRight + " Half steps left: " + halfStepsLeft);
+        // System.err.println("Half steps right: " + halfStepsRight + " Half steps left: " + halfStepsLeft);
         int halfSteps = Math.min(halfStepsRight, halfStepsLeft);
 
         int direction = (halfStepsRight < halfStepsLeft) ? 1 : -1; // 1 signifies right, -1 signifies left.
