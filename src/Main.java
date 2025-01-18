@@ -6,10 +6,8 @@ import java.util.List;
 import src.API.API;
 import src.Algorithm.AStar;
 import src.Algorithm.FrontierBasedAvoidGoals;
-import src.Algorithm.Tremaux;
 import src.Algorithm.Maze.Cell;
 import src.Algorithm.Maze.MouseLocal;
-import src.Constants.MazeConstants;
 
 public class Main {
     private static MouseLocal mouse;
