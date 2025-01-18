@@ -5,6 +5,7 @@ import java.util.List;
 
 import src.API.API;
 import src.Algorithm.AStar;
+import src.Algorithm.FrontierBasedAvoidGoals;
 import src.Algorithm.Tremaux;
 import src.Algorithm.Maze.Cell;
 import src.Algorithm.Maze.MouseLocal;
@@ -14,13 +15,13 @@ public class Main {
     private static MouseLocal mouse;
     private static API api;
     private static AStar aStarAlgoFinder;
-    private static Tremaux tremauxExplorer;
+    private static FrontierBasedAvoidGoals frontierBasedExplorer;
 
     public static void main(String[] args) {
         mouse = new MouseLocal();
         api = new API(mouse);
         aStarAlgoFinder = new AStar();
-        tremauxExplorer = new Tremaux();
+        frontierBasedExplorer = new FrontierBasedAvoidGoals();
 
         addEdgesAsWalls();
 
@@ -33,10 +34,9 @@ public class Main {
         Cell startCell = mouse.getMousePosition();
         Cell goalCell = mouse.getCell(Constants.MazeConstants.goalPositionX, Constants.MazeConstants.goalPositionY);
 
-        // tremauxExplorer.tremauxExplore(mouse, api);
-        traversePathIteratively(mouse, goalCell, "A*", "goal");
-        traversePathIteratively(mouse, startCell, "A*", "return");
-        traversePathIteratively(mouse, goalCell, "A*", "fast");
+        frontierBasedExplorer.exploreMazeAvoidGoals(mouse, api);
+        traversePathIteratively(mouse, startCell, "A*", "return", true);
+        traversePathIteratively(mouse, goalCell, "A*", "fast", true);
 
         // api.moveForward();
         // api.turnRight();
@@ -85,11 +85,11 @@ public class Main {
      * @param algorithm The algorithm to use.
      * @param mode      The mode to use. (goal, return, fast)
      */
-    private static void traversePathIteratively(MouseLocal mouse, Cell goalCell, String algorithm, String mode) {
+    public static boolean traversePathIteratively(MouseLocal mouse, Cell goalCell, String algorithm, String mode, boolean sleep) {
         while (true) {
             // Creates a cell holding the mouse's current position.
             Cell mouseCurrentCell = mouse.getMousePosition();
-            mouseCurrentCell.setIsExplored();
+            mouseCurrentCell.setIsExplored(true);
 
             // If the mouse reaches the goal, then break out of the loop.
             if (mouseCurrentCell.getX() == goalCell.getX() && mouseCurrentCell.getY() == goalCell.getY()) {
@@ -141,12 +141,14 @@ public class Main {
                 }
             }
         }
-
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        if (sleep) {
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
+        return true;
     }
 
     /**
@@ -155,7 +157,7 @@ public class Main {
      * @param mouse The mouse object.
      * @param API   The API object.
      */
-    private static void detectAndSetWalls(MouseLocal mouse, API api) {
+    public static void detectAndSetWalls(MouseLocal mouse, API api) {
         Cell mouseCurrentCell = mouse.getMousePosition();
         if (api.wallFront()) {
             api.setWall(mouseCurrentCell.getX(), mouseCurrentCell.getY(),

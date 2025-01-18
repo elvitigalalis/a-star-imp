@@ -28,8 +28,8 @@ public class Constants {
          * Goal positions can be randomized, but are set at 8,8 for now (center of the
          * maze).
          */
-        public static final int goalPositionX = 0;
-        public static final int goalPositionY = 15;  
+        public static final int goalPositionX = 8;
+        public static final int goalPositionY = 8;  
 
         /*
          * The available colors are as follows:
@@ -58,16 +58,16 @@ public class Constants {
         public static final char goalCellColor = 'R';
         public static final String goalCellText = "Goal";
 
-        public static final char goalPathColor = 'G';
+        public static final char goalPathColor = 'A';
         public static final String goalPathString = "";
 
-        public static final char returnPathColor = 'C';
+        public static final char returnPathColor = 'A';
         public static final String returnPathString = "";
 
-        public static final char overlapPathColor = 'Y';
+        public static final char overlapPathColor = 'A';
         public static final String overLapPathString = "";
 
-        public static final char fastPathColor = 'A';
-        public static final String fastPathString = "F";
+        public static final char fastPathColor = 'a';
+        public static final String fastPathString = "Fast";
     }
 }

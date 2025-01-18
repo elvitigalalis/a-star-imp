@@ -1,5 +1,6 @@
 package src.Algorithm.Maze;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import src.Constants;
@@ -176,27 +177,31 @@ public class MouseLocal {
             // System.err.println("Wall exists between cells: " + cell1.getWallExists(direction));
             return !cell1.getWallExists(direction);
         } catch (IllegalArgumentException e) {
-            // // If part of the eight cardinal directions, but not the four cardinal
-            // // directions, check the following:
-            // System.err.println("Attempting diagonal movement calculations. :)");
-            // boolean upperLDiagonalPossible = false;
-            // boolean lowerLDiagonalPossible = false;
-            // // E.g. direction is (-1, -1) --> check new cell's north and east walls as well
-            // // as current cell's south and west walls.
-            // // In this example, if either the new cell's north + current cell's west (upper
-            // // diagonal) don't exist OR the new cell's east + current cell's south (lower
-            // // diagonal) don't exist, the mouse can move diagonally.
-            // int[] direction1ToCheck = new int[] { direction[0], 0 }; // E.g. -1 0
-            // int[] direction2ToCheck = new int[] { 0, -direction[1] }; // E.g. 0 -1
-            // upperLDiagonalPossible = (!cell1.getWallExists(direction1ToCheck)
-            //         && !cell2.getWallExists(direction2ToCheck));
-            // lowerLDiagonalPossible = (!cell2.getWallExists(new int[] { -direction1ToCheck[0], 0 })
-            //         && !cell1.getWallExists(new int[] { 0, -direction2ToCheck[1] }));
 
-            // System.err.println("Upper L-Diagonal Possible: " + upperLDiagonalPossible + " Lower L-Diagonal Possible: "
-            //         + lowerLDiagonalPossible);
-            // return upperLDiagonalPossible || lowerLDiagonalPossible;
-            return false;
+            if (!cell2.getIsExplored()) {
+                return false;
+            }
+            
+            // If part of the eight cardinal directions, but not the four cardinal
+            // directions, check the following:
+            System.err.println("Attempting diagonal movement calculations. :)");
+            boolean upperLDiagonalPossible = false;
+            boolean lowerLDiagonalPossible = false;
+            // E.g. direction is (-1, -1) --> check new cell's north and east walls as well
+            // as current cell's south and west walls.
+            // In this example, if either the new cell's north + current cell's west (upper
+            // diagonal) don't exist OR the new cell's east + current cell's south (lower
+            // diagonal) don't exist, the mouse can move diagonally.
+            int[] direction1ToCheck = new int[] { direction[0], 0 }; // E.g. -1 0
+            int[] direction2ToCheck = new int[] { 0, -direction[1] }; // E.g. 0 -1
+            upperLDiagonalPossible = (!cell1.getWallExists(direction1ToCheck)
+                    && !cell2.getWallExists(direction2ToCheck));
+            lowerLDiagonalPossible = (!cell2.getWallExists(new int[] { -direction1ToCheck[0], 0 })
+                    && !cell1.getWallExists(new int[] { 0, -direction2ToCheck[1] }));
+
+            System.err.println("Upper L-Diagonal Possible: " + upperLDiagonalPossible + " Lower L-Diagonal Possible: "
+                    + lowerLDiagonalPossible);
+            return upperLDiagonalPossible || lowerLDiagonalPossible;
         }
     }
 
@@ -341,5 +346,43 @@ public class MouseLocal {
         rowString.append("+\n");
 
         return rowString.toString();
+    }
+
+    /**
+     * Gets all valid neighbors in n, e, s, w direcitons.
+     * 
+     * @param cell The cell to get the neighbors of.
+     * @return All valid neighbors in n, e, s, w directions.
+     */
+    public ArrayList<Cell> getNeighbors(Cell cell) {
+        int x = cell.getX();
+        int y = cell.getY();
+        ArrayList<Cell> neighbors = new ArrayList<>();
+    
+        // Include the 8 possible directions now
+        int[][] possibleDirections = {
+            {0, 1}, {1, 0}, {0, -1}, {-1, 0},   // cardinal
+            {1, 1}, {1, -1}, {-1, 1}, {-1, -1} // diagonal
+        };
+    
+        for (int i = 0; i < possibleDirections.length; i++) {
+            int newX = x + possibleDirections[i][0];
+            int newY = y + possibleDirections[i][1];
+    
+            if (isValidCell(newX, newY)) {
+                Cell neighborCell = getCell(newX, newY);
+    
+                // Only add diagonal neighbor if it's explored,
+                // or if it’s cardinal, we can add normally.
+                // For a universal check, you could do:
+                boolean isDiagonal = (possibleDirections[i][0] != 0 && possibleDirections[i][1] != 0);
+    
+                // If it's diagonal, ensure neighbor is explored:
+                if (!isDiagonal || (isDiagonal && neighborCell.getIsExplored())) {
+                    neighbors.add(neighborCell);
+                }
+            }
+        }
+        return neighbors;
     }
 }

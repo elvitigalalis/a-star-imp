@@ -91,8 +91,8 @@ public class Cell {
     /**
      * Sets the cell to be explored.
      */
-    public void setIsExplored() {
-        isExplored = true;
+    public void setIsExplored(boolean isExplored) {
+        this.isExplored = isExplored;
     }
 
     /**
