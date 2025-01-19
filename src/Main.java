@@ -105,9 +105,11 @@ public class Main {
      */
     public static boolean traversePathIteratively(MouseLocal mouse, Cell goalCell, String algorithm, String mode,
             boolean sleep) {
+        Movement previousStepDirectionNeeded = null;
+        Cell mouseCurrentCell;
         while (true) {
             // Creates a cell holding the mouse's current position.
-            Cell mouseCurrentCell = mouse.getMousePosition();
+            mouseCurrentCell = mouse.getMousePosition();
             mouseCurrentCell.setIsExplored(true);
 
             // If the mouse reaches the goal, then break out of the loop.
@@ -135,12 +137,16 @@ public class Main {
             // "\n");
 
             // Sets previous direction needed to null.
-            Movement previousStepDirectionNeeded = null;
+            previousStepDirectionNeeded = null;
             // Iterate over each cell in the path
             for (Cell nextCellInPath : algorithmPath) {
+                if (mouseCurrentCell == nextCellInPath) {
+                    continue;
+                }
+
                 // Figure out the direction from our current cell to the next
                 Movement movement = mouse.canMoveBetweenCells(mouseCurrentCell, nextCellInPath);
-                //FIXME new path not updating
+                // FIXME new path not updating
                 // Check if the direction is diagonal
                 boolean isDiagonalStep = isDiagonalMovement(movement);
                 boolean isPreviousStepDiagonal = (previousStepDirectionNeeded != null
@@ -149,15 +155,13 @@ public class Main {
                 log("[DEBUG] Current Mouse Position: " + mouseCurrentCell.getX() + ", " + mouseCurrentCell.getY());
                 log("[DEBUG] Next Cell: " + nextCellInPath.getX() + ", " + nextCellInPath.getY());
 
-                // if (mouseCurrentCell == nextCellInPath) {
-                // continue;
-                // }
-
                 // Performs the necessary movements to move the mouse to the next cell in the
                 // path.
                 if (isDiagonalStep && isPreviousStepDiagonal) {
                     log("[DEBUG] (1) Diagonal Step From Diagonal: " + Arrays.toString(movement.getDirection()));
-                    diagonalToDiagonalStep(mouseCurrentCell, nextCellInPath, previousStepDirectionNeeded, movement, algorithmPath);
+                    diagonalToDiagonalStep(mouseCurrentCell, nextCellInPath, previousStepDirectionNeeded, movement,
+                            algorithmPath);
+
                 } else if (isDiagonalStep && !isPreviousStepDiagonal) {
                     log("[DEBUG] (2) Diagonal Step From Cardinal: " + Arrays.toString(movement.getDirection()));
                     cardinalToDiagonalStep(mouseCurrentCell, nextCellInPath, previousStepDirectionNeeded, movement);
@@ -189,6 +193,14 @@ public class Main {
 
                 log("Reusing path...");
             }
+        }
+        if (previousStepDirectionNeeded != null && previousStepDirectionNeeded.isDiagonal()) {
+            mouseCurrentCell = mouse.getMousePosition();
+            log("[DEBUG] Last Step: " + previousStepDirectionNeeded.getCellToMoveToFirst().getX() + ", "
+                    + previousStepDirectionNeeded.getCellToMoveToFirst().getY() + " -> " + mouseCurrentCell.getX()
+                    + ", " + mouseCurrentCell.getY());
+            turnMouseToNextCell(previousStepDirectionNeeded.getCellToMoveToFirst(), mouseCurrentCell);
+            api.moveForwardHalf();
         }
         if (sleep) {
             try {
@@ -269,8 +281,9 @@ public class Main {
         return movement.getDirection()[0] != 0 && movement.getDirection()[1] != 0;
     }
 
-    public static Movement diagonalToDiagonalStep(Cell mouseCurrentCell, Cell nextCell, Movement prevMovement, Movement currentMovement, List<Cell> algorithmPath) {
-        Movement diagonalMovement = mouse.canMoveBetweenCells(mouseCurrentCell, nextCell);
+    public static Movement diagonalToDiagonalStep(Cell mouseCurrentCell, Cell nextCell, Movement prevMovement,
+            Movement currentMovement, List<Cell> algorithmPath) {
+                Movement diagonalMovement = mouse.canMoveBetweenCells(mouseCurrentCell, nextCell);
 
         // If can't move, return
         if (!diagonalMovement.canMove()) {
@@ -288,7 +301,9 @@ public class Main {
             turnMouseToNextCell(mouseCurrentCell, nextCell);
             int forwardCounter = 0;
             Cell prevCell = mouseCurrentCell;
-            for(int i = 1; i < algorithmPath.size(); i++) {
+            for (int i = 1; i < algorithmPath.size(); i++) {
+                // log("[DEBUG] Checking cell: " + algorithmPath.get(i).getX() + ", " +
+                // algorithmPath.get(i).getY());
                 Movement canMove = mouse.canMoveBetweenCells(prevCell, algorithmPath.get(i));
                 if (canMove.canMove() && canMove.isDiagonal() && canMove.isLeftOrRightDiagonal().equals(toSide)) {
                     forwardCounter++;
@@ -299,7 +314,7 @@ public class Main {
             }
 
             // Long diagonals
-            for (int i = 0; i < forwardCounter; i++) {
+            for (int i = 0; i < 1; i++) {
                 mouseCurrentCell = mouse.getMousePosition();
                 nextCell = algorithmPath.get(i + 1);
                 prevMovement = mouse.canMoveBetweenCells(mouseCurrentCell, nextCell);
@@ -307,10 +322,13 @@ public class Main {
                 api.moveForward();
             }
             mouseCurrentCell = mouse.getMousePosition();
-            // log("Current cell: " + mouseCurrentCell.getX() + ", " + mouseCurrentCell.getY() + " Intermediary Cell: " + prevMovement.getCellToMoveToFirst().getX() + ", " + prevMovement.getCellToMoveToFirst().getY());
+            // log("Current cell: " + mouseCurrentCell.getX() + ", " +
+            // mouseCurrentCell.getY() + " Intermediary Cell: " +
+            // prevMovement.getCellToMoveToFirst().getX() + ", " +
+            // prevMovement.getCellToMoveToFirst().getY());
             // log("Curent dir: " + Arrays.toString(mouse.getMouseDirection()));
-            turnMouseToNextCell(prevMovement.getCellToMoveToFirst(), mouseCurrentCell);
-            api.moveForwardHalf();
+            log("[DEBUG] Updated Position: " + mouseCurrentCell.getX() + ", " + mouseCurrentCell.getY());
+
         } else {
             // api.moveForward();
         }

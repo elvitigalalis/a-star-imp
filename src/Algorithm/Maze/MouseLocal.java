@@ -178,6 +178,9 @@ public class MouseLocal {
     public Movement canMoveBetweenCells(Cell cell1, Cell cell2) {
         int[] direction = new int[] { cell2.getX() - cell1.getX(), cell2.getY() - cell1.getY() };
         try {
+            if(Math.sqrt(Math.pow(direction[0], 2) + Math.pow(direction[1], 2)) != 1 && Math.sqrt(Math.pow(direction[0], 2) + Math.pow(direction[1], 2)) != Math.sqrt(2)) {
+                return new Movement(false, direction);
+            }
             // Cardinal direction movement.
             boolean canMove = !cell1.getWallExists(direction);
             Movement cardinalMovement = new Movement(canMove, direction);
