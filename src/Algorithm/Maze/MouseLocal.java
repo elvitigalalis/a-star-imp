@@ -82,12 +82,17 @@ public class MouseLocal {
      *         (left or right).
      */
     public int[] obtainHalfStepCount(int[] newDirection) {
-        int halfStepsRight = (Constants.MouseConstants.possibleMouseDirections.length + findDirectionIndexInPossibleDirections(newDirection)
-                - findDirectionIndexInPossibleDirections(mouseDirection)) % Constants.MouseConstants.possibleMouseDirections.length;
-        int halfStepsLeft = (Constants.MouseConstants.possibleMouseDirections.length + findDirectionIndexInPossibleDirections(mouseDirection)
-                - findDirectionIndexInPossibleDirections(newDirection)) % Constants.MouseConstants.possibleMouseDirections.length;
-    
-        // System.err.println("Half steps right: " + halfStepsRight + " Half steps left: " + halfStepsLeft);
+        int halfStepsRight = (Constants.MouseConstants.possibleMouseDirections.length
+                + findDirectionIndexInPossibleDirections(newDirection)
+                - findDirectionIndexInPossibleDirections(mouseDirection))
+                % Constants.MouseConstants.possibleMouseDirections.length;
+        int halfStepsLeft = (Constants.MouseConstants.possibleMouseDirections.length
+                + findDirectionIndexInPossibleDirections(mouseDirection)
+                - findDirectionIndexInPossibleDirections(newDirection))
+                % Constants.MouseConstants.possibleMouseDirections.length;
+
+        // System.err.println("Half steps right: " + halfStepsRight + " Half steps left:
+        // " + halfStepsLeft);
         int halfSteps = Math.min(halfStepsRight, halfStepsLeft);
 
         int direction = (halfStepsRight < halfStepsLeft) ? 1 : -1; // 1 signifies right, -1 signifies left.
@@ -170,38 +175,64 @@ public class MouseLocal {
      * @param cell2 The cell the mouse is moving to.
      * @return If the mouse can move between the two cells.
      */
-    public boolean canMoveBetweenCells(Cell cell1, Cell cell2) {
+    public Movement canMoveBetweenCells(Cell cell1, Cell cell2) {
         int[] direction = new int[] { cell2.getX() - cell1.getX(), cell2.getY() - cell1.getY() };
         try {
-            // Four cardinal directions are supported.
-            // System.err.println("Wall exists between cells: " + cell1.getWallExists(direction));
-            return !cell1.getWallExists(direction);
+            // Cardinal direction movement.
+            boolean canMove = !cell1.getWallExists(direction);
+            Movement cardinalMovement = new Movement(canMove, direction);
+
+            return cardinalMovement;
         } catch (IllegalArgumentException e) {
-
+            // Diagonal direction movement.
+            Movement diagonalMovement = new Movement(false, direction);
             if (!cell2.getIsExplored()) {
-                return false;
+                return diagonalMovement;
             }
-            
-            // If part of the eight cardinal directions, but not the four cardinal
-            // directions, check the following:
-            System.err.println("Attempting diagonal movement calculations. :)");
-            boolean upperLDiagonalPossible = false;
-            boolean lowerLDiagonalPossible = false;
-            // E.g. direction is (-1, -1) --> check new cell's north and east walls as well
-            // as current cell's south and west walls.
-            // In this example, if either the new cell's north + current cell's west (upper
-            // diagonal) don't exist OR the new cell's east + current cell's south (lower
-            // diagonal) don't exist, the mouse can move diagonally.
-            int[] direction1ToCheck = new int[] { direction[0], 0 }; // E.g. -1 0
-            int[] direction2ToCheck = new int[] { 0, -direction[1] }; // E.g. 0 -1
-            upperLDiagonalPossible = (!cell1.getWallExists(direction1ToCheck)
-                    && !cell2.getWallExists(direction2ToCheck));
-            lowerLDiagonalPossible = (!cell2.getWallExists(new int[] { -direction1ToCheck[0], 0 })
-                    && !cell1.getWallExists(new int[] { 0, -direction2ToCheck[1] }));
 
-            System.err.println("Upper L-Diagonal Possible: " + upperLDiagonalPossible + " Lower L-Diagonal Possible: "
-                    + lowerLDiagonalPossible);
-            return upperLDiagonalPossible || lowerLDiagonalPossible;
+            // System.err.println("Current cell: " + cell1.getX() + ", " + cell1.getY() + " direction move: " + direction[0] + ", " + direction[1] + " to cell: " + cell2.getX() + ", " + cell2.getY());
+
+            // If part of the eight cardinal directions, but not the four cardinal directions, check the following:
+            boolean diagonalVertical = false;
+            boolean diagonalHorizontal = false;
+            // E.g. direction is (-1, -1) --> check new cell's north and east walls as well as current cell's south and west walls.
+            // In this example, if either the new cell's north + current cell's west (upper diagonal) don't exist OR the new cell's east + current cell's south (lower diagonal) don't exist, the mouse can move diagonally.
+            int[] horizontalDirectionCheck = new int[] {direction[0], 0}; // E.g. -1 0
+            int[] verticalDirectionCheck = new int[] {0, direction[1]}; // E.g. 0 -1
+
+            // System.err.println("Direction: " + direction[0] + ", " + direction[1]);
+
+            diagonalHorizontal = (!cell1.getWallExists(horizontalDirectionCheck) && !cell2.getWallExists(new int[] {0, -verticalDirectionCheck[1]}));
+            diagonalVertical = (!cell1.getWallExists(verticalDirectionCheck) && !cell2.getWallExists(new int[] {-horizontalDirectionCheck[0], 0}));
+
+            diagonalMovement.setCanMove(diagonalHorizontal || diagonalVertical);
+            if (!diagonalMovement.canMove()) {
+                return diagonalMovement;
+            }
+
+            // Classifies if the horizontal diagonal is the left or right diagonal of the mouse.
+            boolean isHorizontalRight = (findDirectionIndexInPossibleDirections(verticalDirectionCheck) < findDirectionIndexInPossibleDirections(horizontalDirectionCheck));
+            boolean isVerticalRight = !isHorizontalRight;
+
+            if (isHorizontalRight && diagonalHorizontal) {
+                diagonalMovement.setIsDiagonal(true);
+                diagonalMovement.setLeftOrRightDiagonal("right");
+                diagonalMovement.setCellToMoveToFirst(getCell(cell1.getX() + horizontalDirectionCheck[0], cell1.getY()));
+            } else if (!isHorizontalRight && diagonalHorizontal) {
+                diagonalMovement.setIsDiagonal(true);
+                diagonalMovement.setLeftOrRightDiagonal("left");
+                diagonalMovement.setCellToMoveToFirst(getCell(cell1.getX() + horizontalDirectionCheck[0], cell1.getY()));
+            } else if (isVerticalRight && diagonalVertical) {
+                diagonalMovement.setIsDiagonal(true);
+                diagonalMovement.setLeftOrRightDiagonal("right");
+                diagonalMovement.setCellToMoveToFirst(getCell(cell1.getX(), cell1.getY() + verticalDirectionCheck[1]));
+            } else {
+                diagonalMovement.setIsDiagonal(true);
+                diagonalMovement.setLeftOrRightDiagonal("left");
+                diagonalMovement.setCellToMoveToFirst(getCell(cell1.getX(), cell1.getY() + verticalDirectionCheck[1]));
+            }
+
+            return diagonalMovement;
         }
     }
 
@@ -306,7 +337,6 @@ public class MouseLocal {
         }
         mazeString.append("+\n");
 
-
         for (int i = numRows - 1; i >= 0; i--) {
             mazeString.append(printRow(i));
             mazeString.append("\n");
@@ -314,7 +344,7 @@ public class MouseLocal {
 
         return mazeString.toString();
     }
-    
+
     /**
      * Prints the walls of a row of cells in a maze.
      * 
@@ -358,29 +388,25 @@ public class MouseLocal {
         int x = cell.getX();
         int y = cell.getY();
         ArrayList<Cell> neighbors = new ArrayList<>();
-    
+
         // Include the 8 possible directions now
-        int[][] possibleDirections = {
-            {0, 1}, {1, 0}, {0, -1}, {-1, 0},   // cardinal
-            {1, 1}, {1, -1}, {-1, 1}, {-1, -1} // diagonal
-        };
-    
+        int possibleDirections[][] = Constants.MouseConstants.possibleMouseDirections;
+
         for (int i = 0; i < possibleDirections.length; i++) {
             int newX = x + possibleDirections[i][0];
             int newY = y + possibleDirections[i][1];
-    
+
             if (isValidCell(newX, newY)) {
                 Cell neighborCell = getCell(newX, newY);
-    
+
                 // Only add diagonal neighbor if it's explored,
                 // or if it’s cardinal, we can add normally.
                 // For a universal check, you could do:
                 boolean isDiagonal = (possibleDirections[i][0] != 0 && possibleDirections[i][1] != 0);
-    
+
                 // If it's diagonal, ensure neighbor is explored:
-                if (!isDiagonal || (isDiagonal && neighborCell.getIsExplored())) {
-                    neighbors.add(neighborCell);
-                }
+                neighbors.add(neighborCell);
+
             }
         }
         return neighbors;

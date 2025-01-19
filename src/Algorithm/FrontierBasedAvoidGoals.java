@@ -18,6 +18,7 @@ public class FrontierBasedAvoidGoals {
         Set<Cell> frontiers = new HashSet<>();
         Cell start = mouse.getMousePosition();
         frontiers.add(start);
+        start.setIsExplored(true);
 
         while (!frontiers.isEmpty()) {
             // 1) Pick the closest frontier
@@ -43,8 +44,9 @@ public class FrontierBasedAvoidGoals {
 
             // 4) Add valid neighbors, ignoring avoided goals
             for (Cell neighbor : mouse.getNeighbors(mouse.getMousePosition())) {
+                // System.err.println("Neighbor: " + neighbor.getX() + " " + neighbor.getY());
                 if (!neighbor.getIsExplored() 
-                    && mouse.canMoveBetweenCells(mouse.getMousePosition(), neighbor)
+                    && mouse.canMoveBetweenCells(mouse.getMousePosition(), neighbor).canMove()
                     && !isAvoidGoalCell(neighbor)) 
                 {
                     markCellText(api, neighbor);
@@ -119,7 +121,7 @@ public class FrontierBasedAvoidGoals {
 
             for (Cell neighbor : mouse.getNeighbors(cur)) {
                 if (!distMap.containsKey(neighbor) 
-                    && mouse.canMoveBetweenCells(cur, neighbor)) 
+                    && mouse.canMoveBetweenCells(cur, neighbor).canMove()) 
                 {
                     distMap.put(neighbor, curDist + 1);
                     queue.offer(neighbor);

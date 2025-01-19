@@ -84,7 +84,7 @@ public class AStar {
                 // If there is a wall blocking travel between the cells, skip it.
                 Cell neighboringCell = mouse.getCell(neighboringX, neighboringY);
                 // System.err.println("Neighboring cell: " + neighboringCell);
-                if (!mouse.canMoveBetweenCells(toBeProcessedCell, neighboringCell)) {
+                if (!mouse.canMoveBetweenCells(toBeProcessedCell, neighboringCell).canMove()) {
                     continue;
                 }
 
