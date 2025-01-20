@@ -293,19 +293,14 @@ public class Cell {
             this.exists = false;
             this.isShared = false;
         }
+        
+        public boolean getExists() {
+            return exists;
+        }
 
-        /**
-         * Sets to a wall that exists and if it is shared.
-         * 
-         * @param isShared If the wall is shared.
-         */
         public void setExists(boolean isShared) {
             exists = true;
             this.isShared = isShared;
-        }
-
-        public boolean getExists() {
-            return exists;
         }
 
         public boolean getIsShared() {

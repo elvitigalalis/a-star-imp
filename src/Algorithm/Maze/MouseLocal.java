@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import src.Constants;
+import src.API.API;
 
 public class MouseLocal {
     private Cell[][] mazeCells;
@@ -175,7 +176,7 @@ public class MouseLocal {
      * @param cell2 The cell the mouse is moving to.
      * @return If the mouse can move between the two cells.
      */
-    public Movement canMoveBetweenCells(Cell cell1, Cell cell2) {
+    public Movement getMovement(Cell cell1, Cell cell2, boolean diagonalsAllowed) {
         int[] direction = new int[] { cell2.getX() - cell1.getX(), cell2.getY() - cell1.getY() };
         try {
             if(Math.sqrt(Math.pow(direction[0], 2) + Math.pow(direction[1], 2)) != 1 && Math.sqrt(Math.pow(direction[0], 2) + Math.pow(direction[1], 2)) != Math.sqrt(2)) {
@@ -187,9 +188,8 @@ public class MouseLocal {
 
             return cardinalMovement;
         } catch (IllegalArgumentException e) {
-            // Diagonal direction movement.
             Movement diagonalMovement = new Movement(false, direction);
-            if (!cell2.getIsExplored()) {
+            if (!diagonalsAllowed || !cell2.getIsExplored()) {
                 return diagonalMovement;
             }
 
@@ -209,7 +209,7 @@ public class MouseLocal {
             diagonalVertical = (!cell1.getWallExists(verticalDirectionCheck) && !cell2.getWallExists(new int[] {-horizontalDirectionCheck[0], 0}));
 
             diagonalMovement.setCanMove(diagonalHorizontal || diagonalVertical);
-            if (!diagonalMovement.canMove()) {
+            if (!diagonalMovement.getCanMove()) {
                 return diagonalMovement;
             }
 
@@ -387,31 +387,87 @@ public class MouseLocal {
      * @param cell The cell to get the neighbors of.
      * @return All valid neighbors in n, e, s, w directions.
      */
-    public ArrayList<Cell> getNeighbors(Cell cell) {
+    public ArrayList<Cell> getNeighbors(Cell cell, boolean diagonalsAllowed) {
         int x = cell.getX();
         int y = cell.getY();
         ArrayList<Cell> neighbors = new ArrayList<>();
 
-        // Include the 8 possible directions now
         int possibleDirections[][] = Constants.MouseConstants.possibleMouseDirections;
 
         for (int i = 0; i < possibleDirections.length; i++) {
             int newX = x + possibleDirections[i][0];
             int newY = y + possibleDirections[i][1];
 
-            if (isValidCell(newX, newY)) {
+            if (isValidCell(newX, newY) && (diagonalsAllowed ? true : (possibleDirections[i][0] == 0 || possibleDirections[i][1] == 0))) {
                 Cell neighborCell = getCell(newX, newY);
-
-                // Only add diagonal neighbor if it's explored,
-                // or if it’s cardinal, we can add normally.
-                // For a universal check, you could do:
-                boolean isDiagonal = (possibleDirections[i][0] != 0 && possibleDirections[i][1] != 0);
-
-                // If it's diagonal, ensure neighbor is explored:
                 neighbors.add(neighborCell);
-
             }
         }
         return neighbors;
+    }
+
+    public static boolean isSame(Cell cell1, Cell cell2) {
+        return cell1.getX() == cell2.getX() && cell1.getY() == cell2.getY();
+    }
+
+    public static double euclideanDistance(Cell cell1, Cell cell2) {
+        return Math.sqrt(Math.pow(cell1.getX() - cell2.getX(), 2) + Math.pow(cell1.getY() - cell2.getY(), 2));
+    }
+
+    public static double octileDistance(Cell cell1, Cell cell2) {
+        int distanceX = Math.abs(cell1.getX() - cell2.getX());
+        int distanceY = Math.abs(cell1.getX() - cell2.getX());
+        return (distanceX + distanceY) + (Math.sqrt(2) - 2) * Math.min(distanceX, distanceY);
+    }
+
+    public void resetCosts() {
+        for (int x = 0; x < Constants.MazeConstants.numCols; x++) {
+            for (int y = 0; y < Constants.MazeConstants.numRows; y++) {
+                Cell cell = getCell(x, y);
+                cell.setCostFromStart(Double.POSITIVE_INFINITY);
+                cell.setTotalCost(Double.POSITIVE_INFINITY);
+            }
+        }
+    }
+
+    /**
+     * Detects and sets walls in front, left, and right of the mouse.
+     * 
+     * @param mouse The mouse object.
+     * @param API   The API object.
+     */
+    public void detectAndSetWalls(API api) {
+        Cell currCell = getMousePosition();
+        if (api.wallFront()) {
+            api.setWall(currCell.getX(), currCell.getY(), getDirectionAsString(getMouseDirection()));
+        }
+        if (api.wallLeft()) {
+            api.setWall(currCell.getX(), currCell.getY(), getDirectionToTheLeft());
+        }
+        if (api.wallRight()) {
+            api.setWall(currCell.getX(), currCell.getY(), getDirectionToTheRight());
+        }
+    }
+
+    public ArrayList<Cell> getGoalCells() {
+        ArrayList<int[]> goalPoses = Constants.MazeConstants.getGoalCells();
+        ArrayList<Cell> goalCells = new ArrayList<Cell>();
+
+        for (int[] goalPos : goalPoses) {
+            goalCells.add(getCell(goalPos[0], goalPos[1]));
+        }
+        return goalCells;
+    }
+
+
+    /**
+     * Check if a cell is one of our four avoided goals.
+     */
+    public boolean isGoalCell(Cell cell, ArrayList<Cell> goalCells) {
+        boolean isGoal = false;
+        for (Cell goal : goalCells) {
+            isGoal = isGoal || isSame(cell, goal);
+        }
+        return isGoal;
     }
 }

@@ -1,5 +1,9 @@
 package src;
 
+import java.util.ArrayList;
+
+import src.Algorithm.Maze.Cell;
+
 public class Constants {
     public static class MouseConstants {
         public static final String mouseName = "Ratawoulfie";
@@ -28,8 +32,17 @@ public class Constants {
          * Goal positions can be randomized, but are set at 8,8 for now (center of the
          * maze).
          */
-        public static final int goalPositionX = 8;
-        public static final int goalPositionY = 8;  
+        public static final int goalX = 8;
+        public static final int goalY = 8;  
+
+        public static ArrayList<int[]> getGoalCells() {
+            ArrayList<int[]> goalCells = new ArrayList<>();
+            goalCells.add(new int[] {7, 7});
+            goalCells.add(new int[] {7, 8});
+            goalCells.add(new int[]{8, 7});
+            goalCells.add(new int[]{8, 8});
+            return goalCells;
+        }
 
         /*
          * The available colors are as follows:
@@ -55,7 +68,7 @@ public class Constants {
         public static final char startCellColor = 'B';
         public static final String startCellText = "Start";
 
-        public static final char goalCellColor = 'R';
+        public static final char goalCellColor = 'G';
         public static final String goalCellText = "Goal";
 
         public static final char goalPathColor = 'A';

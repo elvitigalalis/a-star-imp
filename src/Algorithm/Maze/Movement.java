@@ -23,19 +23,19 @@ public class Movement {
         this.direction = direction;
     }
 
-    public boolean canMove() {
+    public boolean getCanMove() {
         return this.canMove;
     }
 
-    public boolean isDiagonal() {
+    public boolean getIsDiagonal() {
         return this.isDiagonal;
     }
 
-    public String isLeftOrRightDiagonal() {
+    public String getIsLeftRight() {
         return this.leftOrRightDiagonal;
     }
 
-    public Cell getCellToMoveToFirst() {
+    public Cell getFirstMove() {
         return this.cellToMoveToFirst;
     }
 
