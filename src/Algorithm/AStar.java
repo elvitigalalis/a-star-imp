@@ -1,6 +1,7 @@
 package src.Algorithm;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -44,7 +45,7 @@ public class AStar {
             Cell procCell = discoveredCell.poll();
 
             if (MouseLocal.isSame(procCell, goalCell)) {
-                return reconstructPath(currCell, procCell);
+                return reconstructPath(currCell, goalCell);
             } else if(procCells[procCell.getX()][procCell.getY()]) {
                 continue;
             }
@@ -84,5 +85,48 @@ public class AStar {
         // Reverse to start + 1 -> goal.
         Collections.reverse(path);
         return path;
+    }
+
+    public static String pathToString(MouseLocal mouse, List<Cell> path) {
+        StringBuilder pathString = new StringBuilder();
+        Cell origCell = mouse.getMousePosition();
+        int[] origDir = mouse.getMouseDirection();
+
+        Cell currCell = origCell;
+
+        for (Cell nextCell : path) {
+            int[] newDir = MouseLocal.getDirBetweenCells(currCell, nextCell);
+            int[] turns = mouse.obtainHalfStepCount(newDir);
+
+            if (turns[0] % 2 == 0) {
+                if (turns[1] == 1) {
+                    for (int i = 0; i < turns[0] / 2; i++) {
+                        pathString.append("R");
+                    }
+                } else {
+                    for (int i = 0; i < turns[0] / 2; i++) {
+                        pathString.append("L");
+                    }
+                }
+            } else {
+                if (turns[1] == 1) {
+                    for (int i = 0; i < turns[0]; i++) {
+                        pathString.append("HR");
+                    }
+                } else {
+                    for (int i = 0; i < turns[0]; i++) {
+                        pathString.append("HL");
+                    }
+                }
+            }
+            mouse.turnMouseLocal(newDir);
+            pathString.append("F");
+            mouse.moveForwardLocal();
+            currCell = mouse.getMousePosition();
+        }
+
+        mouse.setMousePosition(origCell);
+        mouse.setMouseDirection(origDir);
+        return pathString.toString();
     }
 }

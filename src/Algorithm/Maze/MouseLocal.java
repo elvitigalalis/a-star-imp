@@ -1,5 +1,6 @@
 package src.Algorithm.Maze;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -118,7 +119,7 @@ public class MouseLocal {
                 return i;
             }
         }
-        throw new IllegalArgumentException("Direction not listed as a possible mouse direction: " + direction);
+        throw new IllegalArgumentException("Direction not listed as a possible mouse direction: " + Arrays.toString(direction));
     }
 
     /**
@@ -295,6 +296,10 @@ public class MouseLocal {
         return mouseDirection;
     }
 
+    public void setMouseDirection(int[] newDirection) {
+        mouseDirection = newDirection;
+    }
+
     /**
      * Returns the maze with all cells.
      * 
@@ -324,6 +329,9 @@ public class MouseLocal {
         return getCell(mousePosition[0], mousePosition[1]);
     }
 
+    public void setMousePosition(Cell newMousePosition) {
+        mousePosition = new int[] {newMousePosition.getX(), newMousePosition.getY()};
+    }
     /**
      * Returns a 2D representation of the maze as a string (formatted as a map).
      * 
@@ -469,5 +477,9 @@ public class MouseLocal {
             isGoal = isGoal || isSame(cell, goal);
         }
         return isGoal;
+    }
+
+    public static int[] getDirBetweenCells(Cell cell1, Cell cell2) {
+        return new int[] {cell2.getX() - cell1.getX(), cell2.getY() - cell1.getY()};
     }
 }

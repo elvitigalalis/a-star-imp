@@ -28,18 +28,16 @@ public class Main {
         ArrayList<Cell> goalCells = mouse.getGoalCells();
 
         setUp(startCell.get(0), goalCells);
-        frontierBased.explore(mouse, api, false);
+        // frontierBased.explore(mouse, api, false);
         Thread.sleep(500);
 
-        setUp(mouse.getMousePosition(), startCell);
-        traversePathIteratively(mouse, startCell, false);
-        Thread.sleep(2000);
+        // setUp(mouse.getMousePosition(), startCell);
+        // traversePathIteratively(mouse, startCell, false);
+        // Thread.sleep(2000);
 
-        setUp(startCell.get(0), goalCells);
-        traversePathIteratively(mouse, goalCells, true);
-
-        // traversePathIteratively(mouse, startCell, "A*", "return", true);
-        // traversePathIteratively(mouse, goalCell, "A*", "fast", true);
+        setAllExplored(mouse);
+        // setUp(startCell.get(0), goalCells);
+        traversePathIteratively(mouse, goalCells, false);
 
         // api.moveForward();
         // api.turnRight();
@@ -132,6 +130,8 @@ public class Main {
 
             log("[PROCESSING] Making New Path");
             List<Cell> path = getBestAlgorithmPath(aStar, goalCells, diagonalsAllowed);
+            log("[PROCESSED] " + AStar.pathToString(mouse, path));
+
             if (path == null) {
                 log("[FATAL ERROR] No path found to goal.");
                 break;
@@ -212,6 +212,7 @@ public class Main {
         turnMouseToNextCell(currCell, nextCell);
         api.moveForward();
 
+        //FIxme
         // FINISHED
     }
 
@@ -227,6 +228,7 @@ public class Main {
     public static void cardinalToDiagonalStep(Cell currCell, Cell nextCell, Movement prevMov, Movement currMov) {
         turnMouseToNextCell(currCell, currMov.getFirstMove());
         api.moveForwardHalf();
+        // mouse.moveForwardLocal();
         turnMouseToNextCell(currCell, nextCell);
         api.moveForwardHalf();
         mouse.moveForwardLocal();

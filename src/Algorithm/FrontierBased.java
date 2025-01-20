@@ -35,7 +35,7 @@ public class FrontierBased {
             currCell.setIsExplored(true);
             api.setText(currCell.getX(), currCell.getY(), "");
             frontiers.remove(currCell);
-            System.err.println("[NEIGHBOR] Neighbors:" + Arrays.deepToString(mouse.getNeighbors(nextFrontier, diagonalsAllowed).toArray()));
+            // System.err.println("[NEIGHBOR] Neighbors:" + Arrays.deepToString(mouse.getNeighbors(nextFrontier, diagonalsAllowed).toArray()));
 
             // 4) Add valid neighbors, ignoring avoided goals.
             for (Cell neighbor : mouse.getNeighbors(currCell, diagonalsAllowed)) {
