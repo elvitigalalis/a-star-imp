@@ -83,7 +83,7 @@ public class Constants {
         public static final char fastPathColor = 'a';
         public static final String fastPathString = "Fast";
 
-        public static boolean showGrid = false;
+        public static boolean showGrid = true;
         public static boolean showPath = false;
     }
 }

@@ -29,14 +29,16 @@ public class Main {
 
         setUp(startCell.get(0), goalCells);
         frontierBased.explore(mouse, api, false);
-        Thread.sleep(500);
+        Thread.sleep(2000);
 
         setUp(mouse.getMousePosition(), startCell);
         traversePathIteratively(mouse, startCell, true, true, false);
-        Thread.sleep(2000);
+        Thread.sleep(500);
 
         setUp(startCell.get(0), goalCells);
         traversePathIteratively(mouse, goalCells, true, true, false);
+        Thread.sleep(2000);
+
 
         // api.moveForward();
         // api.turnRight();
@@ -148,9 +150,13 @@ public class Main {
             }
             log("[PROCESSED] Algorithm Path: " + cellPath.stream().map(cell -> "(" + cell.getX() + ", " + cell.getY() + ")").collect(Collectors.joining(" -> ")));
             String path = AStar.pathToString(mouse, cellPath);
+            // log("[PROCESSED] Path: " + path);
 
             if(allExplored) {
+                log("[PROCESSED] Path: " + path);
+
                 path = diagonalizeAndRun(currCell, path);
+                log("[PROCESSED] Diagonalized Path: " + path);
             } else {
                 for (String movement : path.split("#")) {
                     // log("[PROCESSING] Calculating Movement...");
@@ -206,19 +212,53 @@ public class Main {
         int i;
 
         for (i = 0; i < movements.length - 3; i++) {
+            currCell = mouse.getMousePosition();
+            log ("[DEBUG] Mouse CurrPos: (" + currCell.getX() + ", " + currCell.getY() + ")");
+            if (movements[i].equals("F") && movements.length - i > 4) {
+                i++;
+                String tempBlock = movements[i] + movements[i + 1] + movements[i + 2] + movements[i + 3];
+                if (tempBlock.equals("RFRF") || tempBlock.equals("LFLF") || tempBlock.equals("RFLF") || tempBlock.equals("LFRF")) {
+                    log("[DEBUG] Temp Block: " + tempBlock);
+                    if (!lastMovement.equals("RFRF") && !lastMovement.equals("LFLF") && !lastMovement.equals("RFLF") && !lastMovement.equals("LFRF")) {
+                        api.moveForwardHalf();
+                        newPath.append("FH#");
+                        mouse.moveForwardLocal();
+                    } else {
+                        if (lastMovement.equals("RFLF") || lastMovement.equals("LFLF")) {
+                            newPath.append("L45#F#");
+                            api.turnLeft45();
+                            api.moveForward();
+                        } else if (lastMovement.equals("LFRF") || lastMovement.equals("RFRF")) {
+                            newPath.append("R45#F#");
+                            api.turnRight45();
+                            api.moveForward();
+                        }
+                    }
+                    lastMovement = "F";
+                } else {
+                    i--;
+                }
+            }
+
             String movementsBlock = movements[i] + movements[i + 1] + movements[i + 2] + movements[i + 3];
-            // log("[DEBUG] Movement Block: " + movementsBlock);
+            log("[DEBUG] Movement Block: " + movementsBlock);
+            log("[DEBUG] Last Movement: " + lastMovement);
+
             switch(movementsBlock) {
                 case "RFLF":
                     if (lastMovement.equals(movementsBlock) || lastMovement.equals("LFLF")) {
-                        // newPath.append("F#");
+                        newPath.append("F#");
                         api.moveForward();
                     } else if (lastMovement.equals("LFRF") || lastMovement.equals("RFRF")) {
-                        // newPath.append("R#F#");
+                        newPath.append("R#F#");
                         api.turnRight();
                         api.moveForward();
+                    } else if (lastMovement.equals("F")) {
+                        newPath.append("R45#F#");
+                        api.turnRight45();
+                        api.moveForward();
                     } else {
-                        // newPath.append("R#FH#L45#FH#");
+                        newPath.append("R#FH#L45#FH#");
                         api.turnRight();
                         api.moveForwardHalf();
                         api.turnLeft45();
@@ -232,14 +272,18 @@ public class Main {
                     // FINISHED
                 case "LFRF":
                     if (lastMovement.equals(movementsBlock) || lastMovement.equals("RFRF")) {
-                        // newPath.append("F#");
+                        newPath.append("F#");
                         api.moveForward();
                     } else if (lastMovement.equals("RFLF") || lastMovement.equals("LFLF")) {
-                        // newPath.append("L#F#");
+                        newPath.append("L#F#");
                         api.turnLeft();
                         api.moveForward();
+                    } else if (lastMovement.equals("F")) {
+                        newPath.append("L45#F#");
+                        api.turnLeft45();
+                        api.moveForward();
                     } else {
-                        // newPath.append("L#FH#R45#FH#");
+                        newPath.append("L#FH#R45#FH#");
                         api.turnLeft();
                         api.moveForwardHalf();
                         api.turnRight45();
@@ -252,36 +296,73 @@ public class Main {
 
                     // FINISHED
                 case "RFRF":
-                    if (lastMovement.equals(movementsBlock) || lastMovement.equals("RFLF") || lastMovement.equals("LFRF")) {
-                        // newPath.append("R#FH#R#FH#");
+                    if (lastMovement.equals(movementsBlock)){
+                        newPath.append("R#FH#R#FH#");
                         api.turnRight();
                         api.moveForwardHalf();
                         api.turnRight();
                         api.moveForwardHalf();
                         mouse.moveForwardLocal();
+                    } else if (lastMovement.equals("RFLF")) {
+                        newPath.append("FH#R#FH#");
+                        api.moveForwardHalf();
+                        api.turnRight();
+                        api.moveForwardHalf();
+                        mouse.moveForwardLocal();
+                    } else if (lastMovement.equals("LFLF")) {
+                        newPath.append("FH#R#FH#");
+                        api.moveForwardHalf();
+                        api.turnRight();
+                        api.moveForwardHalf();
+                        mouse.moveForwardLocal();
+                    } else if (lastMovement.equals("F")) {
+                        newPath.append("R45#FH#R#FH#");
+                        api.turnRight45();
+                        api.moveForwardHalf();
+                        api.turnRight();
+                        api.moveForwardHalf();
+                        mouse.moveForwardLocal();
                     } else {
-                        // newPath.append("R#FH#R45#FH#");
+                        newPath.append("R#FH#R45#FH#");
                         api.turnRight();
                         api.moveForwardHalf();
                         api.turnRight45();
                         api.moveForwardHalf();
                         mouse.moveForwardLocal();
                     }
-                    mouse.setMousePosition(mouse.getCell(currCell.getX() + 1, currCell.getY() - 1));
                     i += 3;
                     lastMovement = movementsBlock;
                     break;
 
                 case "LFLF":
-                    if (lastMovement.equals(movementsBlock) || lastMovement.equals("RFLF") || lastMovement.equals("LFRF")) {
-                        // newPath.append("L#FH#L#FH#");
+                    if (lastMovement.equals(movementsBlock)) {
+                        newPath.append("L#FH#L#FH#");
                         api.turnLeft();
                         api.moveForwardHalf();
                         api.turnLeft();
                         api.moveForwardHalf();
                         mouse.moveForwardLocal();
+                    } else if (lastMovement.equals("LFRF")) {
+                        newPath.append("FH#L#FH#");
+                        api.moveForwardHalf();
+                        api.turnLeft();
+                        api.moveForwardHalf();
+                        mouse.moveForwardLocal();
+                    } else if (lastMovement.equals("RFRF")) {
+                        newPath.append("FH#L#FH#");
+                        api.moveForwardHalf();
+                        api.turnLeft();
+                        api.moveForwardHalf();
+                        mouse.moveForwardLocal();
+                    } else if (lastMovement.equals("F")) {
+                        newPath.append("L45#FH#L#FH#");
+                        api.turnLeft45();
+                        api.moveForwardHalf();
+                        api.turnLeft();
+                        api.moveForwardHalf();
+                        mouse.moveForwardLocal();
                     } else {
-                        // newPath.append("L#FH#L45#FH#");
+                        newPath.append("L#FH#L45#FH#");
                         api.turnLeft();
                         api.moveForwardHalf();
                         api.turnLeft45();
@@ -294,15 +375,31 @@ public class Main {
                     
                 default: 
                     if (lastMovement.equals("RFLF") || lastMovement.equals("LFLF")) {
-                        // newPath.append("L45#FH#");
+                        if (movements[i] + movements[i + 1] == "RF") {
+                            newPath.append("FH#R45#FH#");
+                            api.moveForwardHalf();
+                            api.turnRight45();
+                            api.moveForwardHalf();
+                            mouse.moveForwardLocal();
+                            break;
+                        }
+                        newPath.append("L45#FH#");
                         api.turnLeft45();
                         api.moveForwardHalf();
                     } else if (lastMovement.equals("LFRF") || lastMovement.equals("RFRF")) {
-                        // newPath.append("R45#FH#");
+                        if (movements[i] + movements[i + 1] == "LF") {
+                            newPath.append("FH#L45#FH#");
+                            api.moveForwardHalf();
+                            api.turnLeft45();
+                            api.moveForwardHalf();
+                            mouse.moveForwardLocal();
+                            break;
+                        }
+                        newPath.append("R45#FH#");
                         api.turnRight45();
                         api.moveForwardHalf();
                     }
-                    // newPath.append(movements[i] + "#");
+                    newPath.append(movements[i] + "#");
                     // log("[DEBUG] Movement: " + movements[i]);
                     switch(movements[i]) {
                         case "F":
@@ -323,17 +420,19 @@ public class Main {
             }
         }
         if (lastMovement.equals("RFLF") || lastMovement.equals("LFLF")) {
-            // newPath.append("L45#FH#");
+            newPath.append("L45#FH#");
             api.turnLeft45();
             api.moveForwardHalf();
         } else if (lastMovement.equals("LFRF") || lastMovement.equals("RFRF")) {
-            // newPath.append("R45#FH#");
+            newPath.append("R45#FH#");
             api.turnRight45();
             api.moveForwardHalf();
         }
         if (i < movements.length) {
             for (int j = i; j < movements.length; j++) {
-            log("[DEBUG] Movement: " + movements[i]);
+                // log("[DEBUG] Movement: " + movements[i]);
+                currCell = mouse.getMousePosition();
+                log ("[DEBUG] Mouse CurrPos: (" + currCell.getX() + ", " + currCell.getY() + ")");
                 switch(movements[i]) {
                     case "F":
                         api.moveForward();
@@ -349,6 +448,11 @@ public class Main {
                         break;
                 }
             }
+            currCell = mouse.getMousePosition();
+            log ("[DEBUG] Mouse CurrPos: (" + currCell.getX() + ", " + currCell.getY() + ")");
+        } else {
+            currCell = mouse.getMousePosition();
+            log ("[DEBUG] Mouse CurrPos: (" + currCell.getX() + ", " + currCell.getY() + ")");
         }
         return newPath.toString();
     }
