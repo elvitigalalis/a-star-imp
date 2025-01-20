@@ -83,6 +83,19 @@ public class API {
         }
     }
 
+    public void moveForward(int steps) {
+        boolean ack = getAck("moveForward " + steps);
+
+        if (ack) {
+            for (int i = 0; i < steps; i++) {
+                mouseLocal.moveForwardLocal();
+            }
+        } else {
+            System.err.print(mouseLocal.localMazeToString());
+            throw new RuntimeException("Cannot move forward " + steps + " steps");
+        }
+    }
+
     public void moveForwardHalf() {
         boolean ack = getAck("moveForwardHalf");
 

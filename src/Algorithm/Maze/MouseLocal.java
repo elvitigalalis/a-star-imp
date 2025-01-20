@@ -218,24 +218,26 @@ public class MouseLocal {
             boolean isHorizontalRight = (findDirectionIndexInPossibleDirections(verticalDirectionCheck) < findDirectionIndexInPossibleDirections(horizontalDirectionCheck));
             boolean isVerticalRight = !isHorizontalRight;
 
-            if (isHorizontalRight && diagonalHorizontal) {
-                diagonalMovement.setIsDiagonal(true);
-                diagonalMovement.setLeftOrRightDiagonal("right");
-                diagonalMovement.setCellToMoveToFirst(getCell(cell1.getX() + horizontalDirectionCheck[0], cell1.getY()));
-            } else if (!isHorizontalRight && diagonalHorizontal) {
+            if (!isHorizontalRight && diagonalHorizontal) {
                 diagonalMovement.setIsDiagonal(true);
                 diagonalMovement.setLeftOrRightDiagonal("left");
+                diagonalMovement.setCellToMoveToFirst(getCell(cell1.getX() + horizontalDirectionCheck[0], cell1.getY()));
+            } else if (!isVerticalRight && diagonalVertical) {
+                diagonalMovement.setIsDiagonal(true);
+                diagonalMovement.setLeftOrRightDiagonal("left");
+                diagonalMovement.setCellToMoveToFirst(getCell(cell1.getX(), cell1.getY() + verticalDirectionCheck[1]));
+
+            } else if (isHorizontalRight && diagonalHorizontal) {
+                diagonalMovement.setIsDiagonal(true);
+                diagonalMovement.setLeftOrRightDiagonal("right");
                 diagonalMovement.setCellToMoveToFirst(getCell(cell1.getX() + horizontalDirectionCheck[0], cell1.getY()));
             } else if (isVerticalRight && diagonalVertical) {
                 diagonalMovement.setIsDiagonal(true);
                 diagonalMovement.setLeftOrRightDiagonal("right");
                 diagonalMovement.setCellToMoveToFirst(getCell(cell1.getX(), cell1.getY() + verticalDirectionCheck[1]));
             } else {
-                diagonalMovement.setIsDiagonal(true);
-                diagonalMovement.setLeftOrRightDiagonal("left");
-                diagonalMovement.setCellToMoveToFirst(getCell(cell1.getX(), cell1.getY() + verticalDirectionCheck[1]));
+                diagonalMovement.setCanMove(false);
             }
-
             return diagonalMovement;
         }
     }

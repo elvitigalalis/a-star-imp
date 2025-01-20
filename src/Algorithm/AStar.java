@@ -16,7 +16,7 @@ public class AStar {
     public AStar() {
     }
 
-    public List<Cell> findAStarPath(MouseLocal mouse, Cell goalCell, boolean diagonalsAllowed) {
+    public List<Cell> findAStarPath(MouseLocal mouse, Cell goalCell, boolean diagonalsAllowed, boolean avoidGoalCells) {
         mouse.resetCosts();
         Cell currCell = mouse.getMousePosition();
 
@@ -54,6 +54,10 @@ public class AStar {
             ArrayList<Cell> neighbors = mouse.getNeighbors(procCell, diagonalsAllowed);
             for (Cell neighbor : neighbors) {
                 if (procCells[neighbor.getX()][neighbor.getY()]) {
+                    continue;
+                }
+
+                if (avoidGoalCells && mouse.isGoalCell(neighbor, mouse.getGoalCells())) {
                     continue;
                 }
                 
@@ -95,33 +99,73 @@ public class AStar {
         Cell currCell = origCell;
 
         for (Cell nextCell : path) {
+            // System.err.println("[DEBUG] Current cell " + currCell.getX() + ", " + currCell.getY() + " to next cell " + nextCell.getX() + ", " + nextCell.getY());
+            // System.err.println("[DEBUG] Current direction: " + Arrays.toString(mouse.getMouseDirection()));
             int[] newDir = MouseLocal.getDirBetweenCells(currCell, nextCell);
+            // System.err.println("[DEBUG] New dir: " + Arrays.toString(newDir));
             int[] turns = mouse.obtainHalfStepCount(newDir);
 
             if (turns[0] % 2 == 0) {
                 if (turns[1] == 1) {
                     for (int i = 0; i < turns[0] / 2; i++) {
-                        pathString.append("R");
+                        pathString.append("R#");
                     }
+                    mouse.turnMouseLocal(0, turns[0]);
+                    pathString.append("F#");
+                    mouse.moveForwardLocal();
                 } else {
                     for (int i = 0; i < turns[0] / 2; i++) {
-                        pathString.append("L");
+                        pathString.append("L#");
                     }
+                    mouse.turnMouseLocal(turns[0], 0);
+                    pathString.append("F#");
+                    mouse.moveForwardLocal();
                 }
             } else {
-                if (turns[1] == 1) {
-                    for (int i = 0; i < turns[0]; i++) {
-                        pathString.append("HR");
-                    }
-                } else {
-                    for (int i = 0; i < turns[0]; i++) {
-                        pathString.append("HL");
+                Cell cellToMoveToFirst = mouse.getMovement(currCell, nextCell, true).getFirstMove();
+                // System.err.println("[DEBUG] Cell to move to first: " + cellToMoveToFirst.getX() + ", " + cellToMoveToFirst.getY());
+                int[] neededDir = MouseLocal.getDirBetweenCells(currCell, cellToMoveToFirst);
+                // System.err.println("[DEBUG] Needed dir: " + Arrays.toString(neededDir));
+                int[] firstTurns = mouse.obtainHalfStepCount(neededDir);
+                // System.err.println("[DEBUG] First turns: " + Arrays.toString(firstTurns));
+                for (int i = 0; i < firstTurns[0] / 2; i++) {
+                    if (firstTurns[1] == 1) {
+                        pathString.append("R#");
+                    } else {
+                        pathString.append("L#");
                     }
                 }
+                if (firstTurns[1] == 1) {
+                    mouse.turnMouseLocal(0, firstTurns[0]);
+                } else {
+                    mouse.turnMouseLocal(firstTurns[0], 0);
+                }
+
+                pathString.append("F#");
+                mouse.moveForwardLocal();
+
+                // System.err.println("[DEBUG] Current direction: " + Arrays.toString(mouse.getMouseDirection()));
+
+                int[] secNeededDir = MouseLocal.getDirBetweenCells(cellToMoveToFirst, nextCell);
+                // System.err.println("[DEBUG] Second needed dir: " + Arrays.toString(secNeededDir));
+                int[] secTurns = mouse.obtainHalfStepCount(secNeededDir);
+                // System.err.println("[DEBUG] Second turns: " + Arrays.toString(secTurns));
+                for (int i = 0; i < secTurns[0] / 2; i++) {
+                    if (secTurns[1] == 1) {
+                        pathString.append("R#");
+                    } else {
+                        pathString.append("L#");
+                    }
+                }
+                if (secTurns[1] == 1) {
+                    mouse.turnMouseLocal(0, secTurns[0]);
+                } else {
+                    mouse.turnMouseLocal(secTurns[0], 0);
+                }
+                // System.err.println("[DEBUG] Current direction: " + Arrays.toString(mouse.getMouseDirection()));
+                pathString.append("F#");
+                mouse.moveForwardLocal();
             }
-            mouse.turnMouseLocal(newDir);
-            pathString.append("F");
-            mouse.moveForwardLocal();
             currCell = mouse.getMousePosition();
         }
 

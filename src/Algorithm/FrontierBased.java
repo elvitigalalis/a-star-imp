@@ -22,7 +22,7 @@ public class FrontierBased {
             }
 
             // 2) Attempt to move to nextFrontier.
-            boolean moved = Main.traversePathIteratively(mouse, nextFrontier, diagonalsAllowed);
+            boolean moved = Main.traversePathIteratively(mouse, nextFrontier, diagonalsAllowed, false, true);
             if (!moved) {
                 api.setText(nextFrontier.getX(), nextFrontier.getY(), "");
                 frontiers.remove(nextFrontier);
@@ -48,7 +48,7 @@ public class FrontierBased {
         }
 
         // 5) Finally, visit each avoided goal cell (if reachable).
-        Main.traversePathIteratively(mouse, mouse.getGoalCells(), diagonalsAllowed);
+        Main.traversePathIteratively(mouse, mouse.getGoalCells(), diagonalsAllowed, false, false);
     }
 
     /**
