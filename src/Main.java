@@ -151,13 +151,12 @@ public class Main {
                 for (Cell c : cellPath) {
                     api.setColor(c.getX(), c.getY(), Constants.MazeConstants.returnPathColor);
                 }
-
             }
             log("[PROCESSED] Algorithm Path: " + cellPath.stream().map(cell -> "(" + cell.getX() + ", " + cell.getY() + ")").collect(Collectors.joining(" -> ")));
             String path = AStar.pathToString(mouse, cellPath);
             // log("[PROCESSED] Path: " + path);
 
-            if(allExplored) {
+            if(allExplored && diagonalsAllowed) {
                 log("[PROCESSED] Path: " + path);
 
                 path = diagonalizeAndRun(currCell, path);
@@ -410,7 +409,7 @@ public class Main {
                             api.turnLeft45();
                             api.moveForwardHalf();
                             mouse.moveForwardLocal();
-                            api.turnRight45();
+                            api.turnLeft45();
                             api.moveForwardHalf();
                             i += 2;
                             lastMovement = "F";
