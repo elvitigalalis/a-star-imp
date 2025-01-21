@@ -32,7 +32,7 @@ public class Main {
         Thread.sleep(2000);
 
         setUp(mouse.getMousePosition(), startCell);
-        traversePathIteratively(mouse, startCell, true, true, false);
+        traversePathIteratively(mouse, startCell, false, false, false);
         Thread.sleep(500);
 
         setUp(startCell.get(0), goalCells);
@@ -143,7 +143,7 @@ public class Main {
             // log("[PROCESSING] Making New Path...");
             List<Cell> cellPath = getBestAlgorithmPath(aStar, goalCells, diagonalsAllowed, avoidGoalCells);
 
-            if(Constants.MazeConstants.showPath) {
+            if(Constants.MazeConstants.showPath && allExplored && !MouseLocal.isSame(goalCells.get(0), mouse.getCell(0, 0))) {
                 for (Cell c : cellPath) {
                     api.setColor(c.getX(), c.getY(), Constants.MazeConstants.goalPathColor);
                 }
@@ -375,24 +375,52 @@ public class Main {
                     
                 default: 
                     if (lastMovement.equals("RFLF") || lastMovement.equals("LFLF")) {
-                        if (movements[i] + movements[i + 1] == "RF") {
+                        if ((movements[i] + movements[i + 1]).equals("RF")) {
+                            log("POPPPPPY");
                             newPath.append("FH#R45#FH#");
                             api.moveForwardHalf();
                             api.turnRight45();
                             api.moveForwardHalf();
                             mouse.moveForwardLocal();
+                            i++;
+                            lastMovement = "RF";
+                            break;
+                        } else if ((movements[i] + movements[i + 1]).equals("LF")) {
+                            log("POPPY");
+                            newPath.append("L#FH#L45#FH#");
+                            api.turnLeft();
+                            api.moveForwardHalf();
+                            api.turnLeft45();
+                            api.moveForwardHalf();
+                            mouse.moveForwardLocal();
+                            i++;
+                            lastMovement = "LF";
                             break;
                         }
                         newPath.append("L45#FH#");
                         api.turnLeft45();
                         api.moveForwardHalf();
                     } else if (lastMovement.equals("LFRF") || lastMovement.equals("RFRF")) {
-                        if (movements[i] + movements[i + 1] == "LF") {
+                        if ((movements[i] + movements[i + 1]).equals("LF")) {
+                            log("POPPY");
                             newPath.append("FH#L45#FH#");
                             api.moveForwardHalf();
                             api.turnLeft45();
                             api.moveForwardHalf();
                             mouse.moveForwardLocal();
+                            i++;
+                            lastMovement = "LF";
+                            break;
+                        } else if ((movements[i] + movements[i + 1]).equals("RF")) {
+                            log("POPPPPY");
+                            newPath.append("R#FH#R45#FH#");
+                            api.turnRight();
+                            api.moveForwardHalf();
+                            api.turnRight45();
+                            api.moveForwardHalf();
+                            mouse.moveForwardLocal();
+                            i++;
+                            lastMovement = "RF";
                             break;
                         }
                         newPath.append("R45#FH#");
@@ -429,11 +457,12 @@ public class Main {
             api.moveForwardHalf();
         }
         if (i < movements.length) {
+            log("Moves remaining: " + (movements.length - i) + " with moves being " + Arrays.toString(Arrays.copyOfRange(movements, i, movements.length)));
             for (int j = i; j < movements.length; j++) {
-                // log("[DEBUG] Movement: " + movements[i]);
+                log("[DEBUG] Movement: " + movements[j]);
                 currCell = mouse.getMousePosition();
                 log ("[DEBUG] Mouse CurrPos: (" + currCell.getX() + ", " + currCell.getY() + ")");
-                switch(movements[i]) {
+                switch(movements[j]) {
                     case "F":
                         api.moveForward();
                         break;

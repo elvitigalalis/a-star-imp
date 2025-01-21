@@ -71,19 +71,10 @@ public class Constants {
         public static final char goalCellColor = 'G';
         public static final String goalCellText = "Goal";
 
-        public static final char goalPathColor = 'A';
+        public static final char goalPathColor = 'C';
         public static final String goalPathString = "";
 
-        public static final char returnPathColor = 'A';
-        public static final String returnPathString = "";
-
-        public static final char overlapPathColor = 'A';
-        public static final String overLapPathString = "";
-
-        public static final char fastPathColor = 'a';
-        public static final String fastPathString = "Fast";
-
         public static boolean showGrid = true;
-        public static boolean showPath = false;
+        public static boolean showPath = true;
     }
 }
