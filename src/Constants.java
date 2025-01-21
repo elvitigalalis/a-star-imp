@@ -72,7 +72,8 @@ public class Constants {
         public static final String goalCellText = "Goal";
 
         public static final char goalPathColor = 'C';
-        public static final String goalPathString = "";
+        public static final char returnPathColor = 'Y';
+
 
         public static boolean showGrid = true;
         public static boolean showPath = true;

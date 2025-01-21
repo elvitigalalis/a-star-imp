@@ -32,7 +32,7 @@ public class Main {
         Thread.sleep(2000);
 
         setUp(mouse.getMousePosition(), startCell);
-        traversePathIteratively(mouse, startCell, false, false, false);
+        traversePathIteratively(mouse, startCell, false, true, false);
         Thread.sleep(500);
 
         setUp(startCell.get(0), goalCells);
@@ -147,6 +147,11 @@ public class Main {
                 for (Cell c : cellPath) {
                     api.setColor(c.getX(), c.getY(), Constants.MazeConstants.goalPathColor);
                 }
+            } else if (Constants.MazeConstants.showPath && allExplored && goalCells.size() == 1) {
+                for (Cell c : cellPath) {
+                    api.setColor(c.getX(), c.getY(), Constants.MazeConstants.returnPathColor);
+                }
+
             }
             log("[PROCESSED] Algorithm Path: " + cellPath.stream().map(cell -> "(" + cell.getX() + ", " + cell.getY() + ")").collect(Collectors.joining(" -> ")));
             String path = AStar.pathToString(mouse, cellPath);
@@ -396,6 +401,20 @@ public class Main {
                             i++;
                             lastMovement = "LF";
                             break;
+                        } else if ((movements[i] + movements[i + 1] + movements[i + 2]).equals("FLF")) {
+                            log("POPPY");
+                            newPath.append("L45#F#L45#FH#R45#FH#");
+                            api.turnLeft45();
+                            api.moveForwardHalf();
+                            api.moveForwardHalf();
+                            api.turnLeft45();
+                            api.moveForwardHalf();
+                            mouse.moveForwardLocal();
+                            api.turnRight45();
+                            api.moveForwardHalf();
+                            i += 2;
+                            lastMovement = "F";
+                            break;
                         }
                         newPath.append("L45#FH#");
                         api.turnLeft45();
@@ -421,6 +440,20 @@ public class Main {
                             mouse.moveForwardLocal();
                             i++;
                             lastMovement = "RF";
+                            break;
+                        } else if ((movements[i] + movements[i + 1] + movements[i + 2]).equals("FRF")) {
+                            log("POPPPPY");
+                            newPath.append("R45#F#R45#FH#R45#FH#");
+                            api.turnRight45();
+                            api.moveForwardHalf();
+                            api.moveForwardHalf();
+                            api.turnRight45();
+                            api.moveForwardHalf();
+                            mouse.moveForwardLocal();
+                            api.turnRight45();
+                            api.moveForwardHalf();
+                            i += 2;
+                            lastMovement = "F";
                             break;
                         }
                         newPath.append("R45#FH#");
