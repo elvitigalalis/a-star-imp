@@ -21,7 +21,7 @@ void log(const std::string& text) {
  * @param startCell The starting Cell of the mouse.
  * @param goalCells A vector of goal Cells.
  */
-void setUp(const Cell& startCell, const std::vector<Cell>& goalCells) {
+void setUp(const Cell& startCell, const std::vector<Cell*>& goalCells) {
     apiPtr->clearAllColor();
     apiPtr->clearAllText();
 
@@ -50,8 +50,8 @@ void setUp(const Cell& startCell, const std::vector<Cell>& goalCells) {
 
     // Set color and text for each goal cell
     for (const auto& goalCell : goalCells) {
-        apiPtr->setColor(goalCell.getX(), goalCell.getY(), Constants::MazeConstants::goalCellColor);
-        apiPtr->setText(goalCell.getX(), goalCell.getY(), Constants::MazeConstants::goalCellText);
+        apiPtr->setColor(goalCell->getX(), goalCell->getY(), Constants::MazeConstants::goalCellColor);
+        apiPtr->setText(goalCell->getX(), goalCell->getY(), Constants::MazeConstants::goalCellText);
     }
 }
 
@@ -75,14 +75,14 @@ void setAllExplored(MouseLocal* mouse) {
  * @param goalCells A vector of goal Cells.
  * @param diagonalsAllowed Whether diagonal movements are permitted.
  * @param avoidGoalCells Whether to avoid goal cells during pathfinding.
- * @return std::vector<Cell> The best path as a vector of Cells.
+ * @return std::vector<Cell*> The best path as a vector of Cells.
  */
-std::vector<Cell> getBestAlgorithmPath(AStar* aStar, 
-                                      const std::vector<Cell*>& goalCells, 
+std::vector<Cell*> getBestAlgorithmPath(AStar* aStar, 
+                                      std::vector<Cell*>& goalCells, 
                                       bool diagonalsAllowed,
                                       bool avoidGoalCells) 
 {
-    std::vector<Cell> bestPath;
+    std::vector<Cell*> bestPath;
     double bestPathCost = std::numeric_limits<double>::max();
 
     for (const auto& goal : goalCells) {
@@ -92,7 +92,7 @@ std::vector<Cell> getBestAlgorithmPath(AStar* aStar,
             if (cost < bestPathCost) {
                 bestPath.clear();
                 for (const auto& cellPtr : path) {
-                    bestPath.push_back(*cellPtr);
+                    bestPath.push_back(cellPtr);
                 }
                 bestPathCost = cost;
             }
@@ -506,6 +506,8 @@ std::string diagonalizeAndRun(const Cell& currCell, const std::string& path) {
 
             return newPath.str();
         }
+
+        return std::string();
     }
 
 /**
@@ -520,13 +522,13 @@ std::string diagonalizeAndRun(const Cell& currCell, const std::string& path) {
  * @return false If traversal failed.
  */
 bool traversePathIteratively(MouseLocal* mouse, 
-                             const Cell& goalCell, 
+                             Cell& goalCell, 
                              bool diagonalsAllowed,
                              bool allExplored, 
                              bool avoidGoalCells) 
 {
-    std::vector<Cell> goalCells;
-    goalCells.push_back(goalCell);
+    std::vector<Cell*> goalCells;
+    goalCells.push_back(&goalCell);
     return traversePathIteratively(mouse, goalCells, diagonalsAllowed, allExplored, avoidGoalCells);
 }
 
@@ -542,7 +544,7 @@ bool traversePathIteratively(MouseLocal* mouse,
  * @return false If traversal failed for any goal.
  */
 bool traversePathIteratively(MouseLocal* mouse, 
-                             const std::vector<Cell>& goalCells, 
+                             std::vector<Cell*>& goalCells, 
                              bool diagonalsAllowed,
                              bool allExplored, 
                              bool avoidGoalCells) 
@@ -571,34 +573,38 @@ bool traversePathIteratively(MouseLocal* mouse,
         // Detect walls
         mouse->detectAndSetWalls(*apiPtr); // Pass API if needed
 
+
+        //std::vector<Cell*> goalCells2();
+        //std::vector<Cell*> goalCells2;
+
         // Get path from A* or your best algorithm
-        std::vector<Cell> cellPath = getBestAlgorithmPath(aStarPtr, goalCells, diagonalsAllowed, avoidGoalCells);
+        std::vector<Cell*> cellPath = getBestAlgorithmPath(aStarPtr, goalCells, diagonalsAllowed, avoidGoalCells);
 
         // If you want to color the path
         if (Constants::MazeConstants::showPath && allExplored 
-            && !MouseLocal::isSame(goalCells[0], (mouse->getCell(0,0)))) 
+            && !MouseLocal::isSame(*goalCells[0], (mouse->getCell(0,0)))) 
         {
             for (const auto& c : cellPath) {
-                apiPtr->setColor(c.getX(), c.getY(), Constants::MazeConstants::goalPathColor);
+                apiPtr->setColor(c->getX(), c->getY(), Constants::MazeConstants::goalPathColor);
             }
         } 
         else if (Constants::MazeConstants::showPath && allExplored && goalCells.size() == 1) {
             for (const auto& c : cellPath) {
-                apiPtr->setColor(c.getX(), c.getY(), Constants::MazeConstants::returnPathColor);
+                apiPtr->setColor(c->getX(), c->getY(), Constants::MazeConstants::returnPathColor);
             }
         }
 
         // Log the algorithm path
         std::string algPathStr = "";
         for (const auto& c : cellPath) {
-            algPathStr += "(" + std::to_string(c.getX()) + ", " + std::to_string(c.getY()) + ") -> ";
+            algPathStr += "(" + std::to_string(c->getX()) + ", " + std::to_string(c->getY()) + ") -> ";
         }
         log("[PROCESSED] Algorithm Path: " + algPathStr);
 
         // Convert path to string
         std::vector<Cell*> cellPathPtrs;
         for (auto& cell : cellPath) {
-            cellPathPtrs.push_back(&cell);
+            cellPathPtrs.push_back(cell);
         }
         std::string path = AStar::pathToString(*mouse, cellPathPtrs);
         // log("[PROCESSED] Path: " + path); // Optional logging
@@ -654,11 +660,11 @@ int main() {
     frontierBasedPtr = new FrontierBased();
 
     // Initialize start and goal cells
-    std::vector<Cell> startCell;
-    startCell.push_back((mousePtr->getMousePosition()));
-    std::vector<Cell> goalCells = mousePtr->getGoalCells();
+    std::vector<Cell*> startCell;
+    startCell.push_back(&(mousePtr->getMousePosition()));
+    std::vector<Cell*> goalCells = mousePtr->getGoalCells();
 
-    setUp(startCell[0], goalCells);
+    setUp(*startCell[0], goalCells);
 
     // Begin exploration
     frontierBasedPtr->explore(*mousePtr, *apiPtr, false);
@@ -670,7 +676,7 @@ int main() {
     traversePathIteratively(mousePtr, startCell, false, true, false);
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
-    setUp(startCell[0], goalCells);
+    setUp(*startCell[0], goalCells);
     traversePathIteratively(mousePtr, goalCells, true, true, false);
     std::this_thread::sleep_for(std::chrono::milliseconds(2000));
 

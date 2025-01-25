@@ -64,7 +64,7 @@ void log(const std::string& text);
  * @param startCell The starting Cell of the mouse.
  * @param goalCells A vector of goal Cells.
  */
-void setUp(const Cell& startCell, const std::vector<Cell>& goalCells);
+void setUp(const Cell& startCell, const std::vector<Cell*>& goalCells);
 
 /**
  * @brief Marks all cells in the maze as explored.
@@ -80,10 +80,11 @@ void setAllExplored(MouseLocal* mouse);
  * @param goalCells A vector of goal Cells.
  * @param diagonalsAllowed Whether diagonal movements are permitted.
  * @param avoidGoalCells Whether to avoid goal cells during pathfinding.
- * @return std::vector<Cell> The best path as a vector of Cells.
+ * @return std::vector<Cell*> The best path as a vector of Cells.
  */
-std::vector<Cell> getBestAlgorithmPath(AStar* aStar, 
-                                      const std::vector<Cell>& goalCells, 
+ //..
+std::vector<Cell*> getBestAlgorithmPath(AStar* aStar, 
+                                      std::vector<Cell*>& goalCells, 
                                       bool diagonalsAllowed,
                                       bool avoidGoalCells);
 
@@ -116,7 +117,7 @@ std::string diagonalizeAndRun(const Cell& currCell, const std::string& path);
  * @return false If traversal failed.
  */
 bool traversePathIteratively(MouseLocal* mouse, 
-                             const Cell& goalCell, 
+                             Cell& goalCell, 
                              bool diagonalsAllowed,
                              bool allExplored, 
                              bool avoidGoalCells);
@@ -133,7 +134,7 @@ bool traversePathIteratively(MouseLocal* mouse,
  * @return false If traversal failed for any goal.
  */
 bool traversePathIteratively(MouseLocal* mouse, 
-                             const std::vector<Cell>& goalCells, 
+                             std::vector<Cell*>& goalCells, 
                              bool diagonalsAllowed,
                              bool allExplored, 
                              bool avoidGoalCells);

@@ -53,7 +53,7 @@ void FrontierBased::explore(MouseLocal& mouse, API& api, bool diagonalsAllowed) 
     }
 
     // 5) Finally, visit each avoided goal cell (if reachable).
-    std::vector<Cell> goalCells = mouse.getGoalCells();
+    std::vector<Cell*> goalCells = mouse.getGoalCells();
     traversePathIteratively(&mouse, goalCells, diagonalsAllowed, false, false);
 }
 

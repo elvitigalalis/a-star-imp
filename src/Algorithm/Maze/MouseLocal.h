@@ -136,7 +136,7 @@ public:
      * 
      * @return A 2D vector representing the maze cells.
      */
-    const std::vector<std::vector<Cell> >& getMazeCells() const;
+    const std::vector<std::vector<Cell*> >& getMazeCells() const;
 
     /**
      * @brief Returns a particular cell in the maze at position (x, y).
@@ -147,7 +147,7 @@ public:
      * @throws std::out_of_range if the cell coordinates are invalid.
      */
     Cell& getCell(int x, int y);
-    const Cell& getCell(int x, int y) const;
+    Cell& getCell(int x, int y) const;
 
     /**
      * @brief Returns the mouse's current position in the maze.
@@ -223,7 +223,7 @@ public:
      * 
      * @return A vector of goal cells.
      */
-    std::vector<Cell> getGoalCells() const;
+    std::vector<Cell*> getGoalCells() const;
 
     /**
      * @brief Checks if a cell is one of the goal cells.
@@ -232,7 +232,7 @@ public:
      * @param goalCells The vector of goal cells.
      * @return True if the cell is a goal cell, false otherwise.
      */
-    bool isGoalCell(const Cell& cell, const std::vector<Cell>& goalCells) const;
+    bool isGoalCell(const Cell& cell, const std::vector<Cell*>& goalCells) const;
 
     /**
      * @brief Gets the direction vector between two cells.
@@ -258,7 +258,7 @@ private:
     void setUpMazeLocal();
 
     // Member Variables
-    std::vector<std::vector<Cell> > mazeCells; /**< 2D grid representing the maze cells. */
+    std::vector<std::vector<Cell*> > mazeCells; /**< 2D grid representing the maze cells. */
     std::array<int, 2> mousePosition; /**< Current position of the mouse [x, y]. */
     std::array<int, 2> mouseDirection; /**< Current direction of the mouse [dx, dy]. */
 };

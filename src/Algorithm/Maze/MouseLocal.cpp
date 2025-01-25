@@ -8,7 +8,7 @@
 // Constructor
 MouseLocal::MouseLocal() {
     // Initialize mazeCells with numRows x numCols
-    mazeCells.resize(Constants::MazeConstants::numRows, std::vector<Cell>(Constants::MazeConstants::numCols, Cell(0, 0)));
+    mazeCells.resize(Constants::MazeConstants::numRows, std::vector<Cell*>(Constants::MazeConstants::numCols, nullptr));
     
     // Initialize cells with their coordinates
     setUpMazeLocal();
@@ -22,7 +22,7 @@ MouseLocal::MouseLocal() {
 void MouseLocal::setUpMazeLocal() {
     for(int i = 0; i < Constants::MazeConstants::numCols; ++i) { // X-direction
         for(int j = 0; j < Constants::MazeConstants::numRows; ++j) { // Y-direction
-            mazeCells[j][i] = Cell(i, j); // Assuming mazeCells[row][col], row=j, col=i
+            mazeCells[j][i] = &Cell(i, j); // Assuming mazeCells[row][col], row=j, col=i
         }
     }
 }
@@ -99,12 +99,12 @@ void MouseLocal::addWallLocal(int x, int y, const std::array<int, 2>& direction)
     int neighboringCellY = y + direction[1];
 
     if(isValidCell(neighboringCellX, neighboringCellY)) {
-        mazeCells[y][x].addWall(direction, true);
-        mazeCells[neighboringCellY][neighboringCellX].addWall({ -direction[0], -direction[1] }, true);
+        mazeCells[y][x]->addWall(direction, true);
+        mazeCells[neighboringCellY][neighboringCellX]->addWall({ -direction[0], -direction[1] }, true);
         // std::cerr << "Shared wall cell found :)" << std::endl;
     }
     else {
-        mazeCells[y][x].addWall(direction, false);
+        mazeCells[y][x]->addWall(direction, false);
         // std::cerr << "Edge cell found :)" << std::endl; // FIXME: Remove later.
     }
 }
@@ -242,7 +242,7 @@ void MouseLocal::setMouseDirection(const std::array<int, 2>& newDirection) {
 }
 
 // Returns the maze cells
-const std::vector<std::vector<Cell>>& MouseLocal::getMazeCells() const {
+const std::vector<std::vector<Cell*>>& MouseLocal::getMazeCells() const {
     return mazeCells;
 }
 
@@ -251,14 +251,14 @@ Cell& MouseLocal::getCell(int x, int y) {
     if(!isValidCell(x, y)) {
         throw std::out_of_range("Invalid cell coordinates.");
     }
-    return mazeCells[y][x];
+    return *mazeCells[y][x];
 }
 
-const Cell& MouseLocal::getCell(int x, int y) const {
+Cell& MouseLocal::getCell(int x, int y) const {
     if(!isValidCell(x, y)) {
         throw std::out_of_range("Invalid cell coordinates.");
     }
-    return mazeCells[y][x];
+    return *mazeCells[y][x];
 }
 
 // Returns mouse's current position cell
@@ -337,7 +337,8 @@ std::vector<Cell*> MouseLocal::getNeighbors(const Cell& cell, bool diagonalsAllo
         int newY = y + direction[1];
         if(isValidCell(newX, newY)) {
             if(diagonalsAllowed || direction[0] == 0 || direction[1] == 0) {
-                neighbors.emplace_back(getCell(newX, newY));
+                //.. neighbors.emplace_back(getCell(newX, newY));
+                //.. neighbors.emplace_back(new Cell(getCell(newX, newY)));
             }
         }
     }
@@ -387,20 +388,20 @@ void MouseLocal::detectAndSetWalls(API& api) {
 }
 
 // Retrieves goal cells from Constants
-std::vector<Cell> MouseLocal::getGoalCells() const {
+std::vector<Cell*> MouseLocal::getGoalCells() const {
     std::vector<std::array<int,2>> goalPoses = Constants::MazeConstants::getGoalCells();
-    std::vector<Cell> goalCells;
+    std::vector<Cell*> goalCells;
     for(const auto& goalPos : goalPoses) {
-        goalCells.emplace_back(getCell(goalPos[0], goalPos[1]));
+        goalCells.emplace_back(&getCell(goalPos[0], goalPos[1]));
     }
     return goalCells;
 }
 
 // Checks if a cell is a goal cell
-bool MouseLocal::isGoalCell(const Cell& cell, const std::vector<Cell>& goalCells) const {
+bool MouseLocal::isGoalCell(const Cell& cell, const std::vector<Cell*>& goalCells) const {
     bool isGoal = false;
     for(const auto& goal : goalCells) {
-        isGoal = isGoal || isSame(cell, goal);
+        isGoal = isGoal || isSame(cell, *goal);
     }
     return isGoal;
 }
