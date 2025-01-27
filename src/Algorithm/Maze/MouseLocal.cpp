@@ -22,7 +22,16 @@ MouseLocal::MouseLocal() {
 void MouseLocal::setUpMazeLocal() {
     for(int i = 0; i < Constants::MazeConstants::numCols; ++i) { // X-direction
         for(int j = 0; j < Constants::MazeConstants::numRows; ++j) { // Y-direction
-            mazeCells[j][i] = &Cell(i, j); // Assuming mazeCells[row][col], row=j, col=i
+            mazeCells[j][i] = new Cell(i, j); // Assuming mazeCells[row][col], row=j, col=i
+        }
+    }
+}
+
+void MouseLocal::deleteMazeLocal()
+{
+    for(int i = 0; i < Constants::MazeConstants::numCols; ++i) { // X-direction
+        for(int j = 0; j < Constants::MazeConstants::numRows; ++j) { // Y-direction
+            delete mazeCells[j][i];
         }
     }
 }

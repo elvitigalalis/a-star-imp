@@ -20,8 +20,11 @@ API::API(MouseLocal* mouseLocal) : mouseLocal(mouseLocal) {}
 std::string API::getResponse(const std::string& commandUsed) {
     std::cout << commandUsed << std::endl;           // Send command to simulator
     std::string response;
+
     std::getline(std::cin, response);                // Read full line response
     return response;
+
+    //return (std::rand() % 2) == 1 ? "true" : "false";
 }
 
 /**
