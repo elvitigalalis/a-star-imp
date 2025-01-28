@@ -45,8 +45,8 @@ void setUp(const Cell& startCell, const std::vector<Cell*>& goalCells) {
     }
 
     log("[START] Ready for " + Constants::MouseConstants::mouseName + "!\n");
-    apiPtr->setColor(0, 0, Constants::MazeConstants::startCellColor);
-    apiPtr->setText(0, 0, Constants::MazeConstants::startCellText);
+    apiPtr->setColor(startCell.getX(), startCell.getY(), Constants::MazeConstants::startCellColor);
+    apiPtr->setText(startCell.getX(), startCell.getY(), Constants::MazeConstants::startCellText);
 
     // Set color and text for each goal cell
     for (const auto& goalCell : goalCells) {
@@ -171,7 +171,7 @@ void turnMouseToNextCell(const Cell& currentCell, const Cell& nextCell) {
  * @param path The path as a string of movement commands.
  * @return std::string The modified path after handling diagonals.
  */
-std::string diagonalizeAndRun(const Cell& currCell, const std::string& path) {
+std::string diagonalizeAndRun(Cell& currCell, const std::string& path) {
     std::ostringstream newPath;
     std::vector<std::string> movements;
     
@@ -188,8 +188,8 @@ std::string diagonalizeAndRun(const Cell& currCell, const std::string& path) {
     int i = 0;
 
     while (i < static_cast<int>(movements.size()) - 3) {
-        Cell currentCell = (mousePtr->getMousePosition());
-        log("[DEBUG] Mouse CurrPos: (" + std::to_string(currentCell.getX()) + ", " + std::to_string(currentCell.getY()) + ")");
+        currCell = (mousePtr->getMousePosition());
+        log("[DEBUG] Mouse CurrPos: (" + std::to_string(currCell.getX()) + ", " + std::to_string(currCell.getY()) + ")");
 
         // Check for specific movement patterns
         if (movements[i] == "F" && (static_cast<int>(movements.size()) - i) > 4) {
@@ -480,8 +480,8 @@ std::string diagonalizeAndRun(const Cell& currCell, const std::string& path) {
             log("Moves remaining: " + std::to_string(movements.size() - i) + " with moves being ...");
             for (int j = i; j < static_cast<int>(movements.size()); j++) {
                 log("[DEBUG] Movement: " + movements[j]);
-                Cell currentCell = (mousePtr->getMousePosition());
-                log("[DEBUG] Mouse CurrPos: (" + std::to_string(currentCell.getX()) + ", " + std::to_string(currentCell.getY()) + ")");
+                currCell = (mousePtr->getMousePosition());
+                log("[DEBUG] Mouse CurrPos: (" + std::to_string(currCell.getX()) + ", " + std::to_string(currCell.getY()) + ")");
 
                 if (movements[j] == "F") {
                     apiPtr->moveForward();
@@ -496,12 +496,12 @@ std::string diagonalizeAndRun(const Cell& currCell, const std::string& path) {
                     log("[ERROR] Invalid Movement: " + movements[j]);
                 }
             }
-            Cell currentCell = (mousePtr->getMousePosition());
-            log("[DEBUG] Mouse CurrPos: (" + std::to_string(currentCell.getX()) + ", " + std::to_string(currentCell.getY()) + ")");
+            currCell = (mousePtr->getMousePosition());
+            log("[DEBUG] Mouse CurrPos: (" + std::to_string(currCell.getX()) + ", " + std::to_string(currCell.getY()) + ")");
         }
         else {
-            Cell currentCell = (mousePtr->getMousePosition());
-            log("[DEBUG] Mouse CurrPos: (" + std::to_string(currentCell.getX()) + ", " + std::to_string(currentCell.getY()) + ")");
+            currCell = (mousePtr->getMousePosition());
+            log("[DEBUG] Mouse CurrPos: (" + std::to_string(currCell.getX()) + ", " + std::to_string(currCell.getY()) + ")");
         }
 
             return newPath.str();

@@ -103,7 +103,7 @@ void turnMouseToNextCell(const Cell& currentCell, const Cell& nextCell);
  * @param path The path as a string of movement commands.
  * @return std::string The modified path after handling diagonals.
  */
-std::string diagonalizeAndRun(const Cell& currCell, const std::string& path);
+std::string diagonalizeAndRun(Cell& currCell, const std::string& path);
 
 /**
  * @brief Traverses a single goal cell iteratively.

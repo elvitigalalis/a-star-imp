@@ -18,6 +18,10 @@ MouseLocal::MouseLocal() {
     mouseDirection = { Constants::MouseConstants::startingMouseDirection[0], Constants::MouseConstants::startingMouseDirection[1] };
 }
 
+MouseLocal::~MouseLocal() {
+    deleteMazeLocal();
+}
+
 // Sets up the maze with cells
 void MouseLocal::setUpMazeLocal() {
     for(int i = 0; i < Constants::MazeConstants::numCols; ++i) { // X-direction

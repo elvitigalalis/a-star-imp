@@ -21,9 +21,9 @@ public:
      */
     MouseLocal();
 
-    ~MouseLocal() {
-        deleteMazeLocal();
-    }
+    ~MouseLocal();
+
+    void deleteMazeLocal();
 
     /**
      * @brief Adjusts the mouse's locally held direction based on the turn performed.
@@ -260,7 +260,6 @@ private:
      * @brief Sets up the maze by initializing each cell with its coordinates.
      */
     void setUpMazeLocal();
-    void deleteMazeLocal();
 
     // Member Variables
     std::vector<std::vector<Cell*> > mazeCells; /**< 2D grid representing the maze cells. */
