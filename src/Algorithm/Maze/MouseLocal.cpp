@@ -350,8 +350,7 @@ std::vector<Cell*> MouseLocal::getNeighbors(const Cell& cell, bool diagonalsAllo
         int newY = y + direction[1];
         if(isValidCell(newX, newY)) {
             if(diagonalsAllowed || direction[0] == 0 || direction[1] == 0) {
-                //.. neighbors.emplace_back(getCell(newX, newY));
-                //.. neighbors.emplace_back(new Cell(getCell(newX, newY)));
+                neighbors.emplace_back(&getCell(newX, newY));
             }
         }
     }
