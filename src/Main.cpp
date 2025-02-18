@@ -227,7 +227,7 @@ string diagonalizeAndRun(Cell &currCell, const string &path)
     string lastMovement;
     int i;
 
-    for (i = 0; i < static_cast<int>(movements.size()) - 3; i++)
+    for (i = 0; i < static_cast<int>(movements.size()); i++)
     {
         currCell = (mousePtr->getMousePosition());
         log("[DEBUG] Mouse CurrPos: (" + std::to_string(currCell.getX()) + ", " + std::to_string(currCell.getY()) + ")");
@@ -244,7 +244,7 @@ string diagonalizeAndRun(Cell &currCell, const string &path)
                 {
                     apiPtr->moveForwardHalf();
                     newPath << "FH#";
-                    mousePtr->moveForwardLocal();
+                    //mousePtr->moveForwardLocal();
                 }
                 else
                 {
@@ -275,6 +275,7 @@ string diagonalizeAndRun(Cell &currCell, const string &path)
 
         if (movementsBlock == "RFLF")
         {
+            log("a");
             if (lastMovement == movementsBlock || lastMovement == "LFLF")
             {
                 newPath << "F#";
@@ -307,6 +308,7 @@ string diagonalizeAndRun(Cell &currCell, const string &path)
         }
         else if (movementsBlock == "LFRF")
         {
+            log("b");
             if (lastMovement == movementsBlock || lastMovement == "RFRF")
             {
                 newPath << "F#";
@@ -339,6 +341,7 @@ string diagonalizeAndRun(Cell &currCell, const string &path)
         }
         else if (movementsBlock == "RFRF")
         {
+            log("c");
             if (lastMovement == movementsBlock)
             {
                 newPath << "R#FH#R#FH#";
@@ -380,6 +383,7 @@ string diagonalizeAndRun(Cell &currCell, const string &path)
         }
         else if (movementsBlock == "LFLF")
         {
+            log("d");
             if (lastMovement == movementsBlock)
             {
                 newPath << "L#FH#L#FH#";
@@ -421,6 +425,7 @@ string diagonalizeAndRun(Cell &currCell, const string &path)
         }
         else
         {
+            log("e");
             // Handle smaller blocks or default movements
             if (lastMovement == "RFLF" || lastMovement == "LFLF")
             {
@@ -767,14 +772,14 @@ int main()
     setUp(*startCell[0], goalCells);
 
     // Begin exploration
-    // frontierBasedPtr->explore(*mousePtr, *apiPtr, false);
+    frontierBasedPtr->explore(*mousePtr, *apiPtr, false);
 
     // Sleep 2 seconds to mimic Thread.sleep(2000)
-    // std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+     std::this_thread::sleep_for(std::chrono::milliseconds(2000));
 
     // setUp((mousePtr->getMousePosition()), startCell);
-    // traversePathIteratively(mousePtr, startCell, false, true, false);
-    // std::this_thread::sleep_for(std::chrono::milliseconds(500));
+     traversePathIteratively(mousePtr, startCell, false, true, false);
+     std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
     setUp(*startCell[0], goalCells);
     traversePathIteratively(mousePtr, goalCells, true, true, false);

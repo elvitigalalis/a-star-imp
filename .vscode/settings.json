@@ -2,6 +2,7 @@
     "files.associations": {
         "string": "cpp",
         "istream": "cpp",
-        "vector": "cpp"
+        "vector": "cpp",
+        "__threading_support": "cpp"
     }
 }
