@@ -1,8 +1,8 @@
 CXX = g++
 CXXFLAGS = -Wall -Wextra -std=c++11 -I./include/
 
-all: API.o Main.o Constants.o AlgorithmAStar.o AlgorithmFrontierBased.o MazeCell.o MazeMouseLocal.o MazeMovement.o
-	$(CXX) $(CXXFLAGS) API.o Main.o Constants.o AlgorithmAStar.o AlgorithmFrontierBased.o MazeCell.o MazeMouseLocal.o MazeMovement.o -o Micromouse.out
+all: API.o Main.o Constants.o Logger.o AlgorithmAStar.o AlgorithmFrontierBased.o MazeCell.o MazeMouseLocal.o MazeMovement.o
+	$(CXX) $(CXXFLAGS) API.o Main.o Constants.o Logger.o AlgorithmAStar.o AlgorithmFrontierBased.o MazeCell.o MazeMouseLocal.o MazeMovement.o -o Micromouse.out
 
 API.o: src/API/API.cpp src/API/API.h
 	$(CXX) $(CXXFLAGS) -c src/API/API.cpp -o API.o
@@ -12,6 +12,9 @@ Main.o: src/Main.cpp src/Main.h
 
 Constants.o : src/Constants.cpp src/Constants.h
 	$(CXX) $(CXXFLAGS) -c src/Constants.cpp -o Constants.o
+
+Logger.o : src/Logger.cpp src/Logger.h
+	$(CXX) $(CXXFLAGS) -c src/Logger.cpp -o Logger.o
 
 AlgorithmAStar.o: src/Algorithm/AStar.cpp src/Algorithm/AStar.h
 	$(CXX) $(CXXFLAGS) -c src/Algorithm/AStar.cpp -o AlgorithmAStar.o

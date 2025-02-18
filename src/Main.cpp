@@ -1,44 +1,51 @@
 #include "Main.h"
 
 // Define global variables
-MouseLocal* mousePtr = nullptr;
-API* apiPtr = nullptr;
-AStar* aStarPtr = nullptr;
-FrontierBased* frontierBasedPtr = nullptr;
+MouseLocal *mousePtr = nullptr;
+API *apiPtr = nullptr;
+AStar *aStarPtr = nullptr;
+FrontierBased *frontierBasedPtr = nullptr;
 
 /**
  * @brief Logs messages to the standard error stream.
- * 
+ *
  * @param text The message to log.
  */
-void log(const std::string& text) {
-    std::cerr << text << std::endl;
+void log(const string &text)
+{
+    cerr << text << std::endl;
 }
 
 /**
  * @brief Sets up the maze walls, grid text/colors, etc.
- * 
+ *
  * @param startCell The starting Cell of the mouse.
  * @param goalCells A vector of goal Cells.
  */
-void setUp(const Cell& startCell, const std::vector<Cell*>& goalCells) {
+void setUp(const Cell &startCell, const vector<Cell *> &goalCells)
+{
     apiPtr->clearAllColor();
     apiPtr->clearAllText();
 
     // Add walls to the edges of the maze
-    for (int i = 0; i < Constants::MazeConstants::numCols; i++) {
-        apiPtr->setWall(i, 0, "s"); // Bottom edge
+    for (int i = 0; i < Constants::MazeConstants::numCols; i++)
+    {
+        apiPtr->setWall(i, 0, "s");                                     // Bottom edge
         apiPtr->setWall(i, Constants::MazeConstants::numRows - 1, "n"); // Top edge
     }
-    for (int j = 0; j < Constants::MazeConstants::numRows; j++) {
-        apiPtr->setWall(0, j, "w"); // Left edge
+    for (int j = 0; j < Constants::MazeConstants::numRows; j++)
+    {
+        apiPtr->setWall(0, j, "w");                                     // Left edge
         apiPtr->setWall(Constants::MazeConstants::numCols - 1, j, "e"); // Right edge
     }
 
     // Optional grid labels
-    if (Constants::MazeConstants::showGrid) {
-        for(int i = 0; i < Constants::MazeConstants::numCols; i++) {
-            for(int j = 0; j < Constants::MazeConstants::numRows; j++) {
+    if (Constants::MazeConstants::showGrid)
+    {
+        for (int i = 0; i < Constants::MazeConstants::numCols; i++)
+        {
+            for (int j = 0; j < Constants::MazeConstants::numRows; j++)
+            {
                 apiPtr->setText(i, j, std::to_string(i) + "," + std::to_string(j));
             }
         }
@@ -49,7 +56,8 @@ void setUp(const Cell& startCell, const std::vector<Cell*>& goalCells) {
     apiPtr->setText(startCell.getX(), startCell.getY(), Constants::MazeConstants::startCellText);
 
     // Set color and text for each goal cell
-    for (const auto& goalCell : goalCells) {
+    for (const auto &goalCell : goalCells)
+    {
         apiPtr->setColor(goalCell->getX(), goalCell->getY(), Constants::MazeConstants::goalCellColor);
         apiPtr->setText(goalCell->getX(), goalCell->getY(), Constants::MazeConstants::goalCellText);
     }
@@ -57,12 +65,15 @@ void setUp(const Cell& startCell, const std::vector<Cell*>& goalCells) {
 
 /**
  * @brief Marks all cells in the maze as explored.
- * 
+ *
  * @param mouse Pointer to the MouseLocal instance.
  */
-void setAllExplored(MouseLocal* mouse) {
-    for (int i = 0; i < Constants::MazeConstants::numCols; i++) {
-        for (int j = 0; j < Constants::MazeConstants::numRows; j++) {
+void setAllExplored(MouseLocal *mouse)
+{
+    for (int i = 0; i < Constants::MazeConstants::numCols; i++)
+    {
+        for (int j = 0; j < Constants::MazeConstants::numRows; j++)
+        {
             mouse->getCell(i, j).setIsExplored(true);
         }
     }
@@ -70,28 +81,32 @@ void setAllExplored(MouseLocal* mouse) {
 
 /**
  * @brief Determines the best path among multiple goals using the A* algorithm.
- * 
+ *
  * @param aStar Pointer to the AStar instance.
  * @param goalCells A vector of goal Cells.
  * @param diagonalsAllowed Whether diagonal movements are permitted.
  * @param avoidGoalCells Whether to avoid goal cells during pathfinding.
- * @return std::vector<Cell*> The best path as a vector of Cells.
+ * @return vector<Cell*> The best path as a vector of Cells.
  */
-std::vector<Cell*> getBestAlgorithmPath(AStar* aStar, 
-                                      std::vector<Cell*>& goalCells, 
-                                      bool diagonalsAllowed,
-                                      bool avoidGoalCells) 
+vector<Cell *> getBestAlgorithmPath(AStar *aStar,
+                                    vector<Cell *> &goalCells,
+                                    bool diagonalsAllowed,
+                                    bool avoidGoalCells)
 {
-    std::vector<Cell*> bestPath;
+    vector<Cell *> bestPath;
     double bestPathCost = std::numeric_limits<double>::max();
 
-    for (const auto& goal : goalCells) {
-        std::vector<Cell*> path = aStar->findAStarPath(*mousePtr, *goal, diagonalsAllowed, avoidGoalCells);
-        if (!path.empty()) {
+    for (const auto &goal : goalCells)
+    {
+        vector<Cell *> path = aStar->findAStarPath(*mousePtr, *goal, diagonalsAllowed, avoidGoalCells);
+        if (!path.empty())
+        {
             double cost = goal->getTotalCost();
-            if (cost < bestPathCost) {
+            if (cost < bestPathCost)
+            {
                 bestPath.clear();
-                for (const auto& cellPtr : path) {
+                for (const auto &cellPtr : path)
+                {
                     bestPath.push_back(cellPtr);
                 }
                 bestPathCost = cost;
@@ -103,11 +118,12 @@ std::vector<Cell*> getBestAlgorithmPath(AStar* aStar,
 
 /**
  * @brief Turns the mouse from its current cell to face the next cell.
- * 
+ *
  * @param currentCell The current Cell position of the mouse.
  * @param nextCell The next Cell position to face.
  */
-void turnMouseToNextCell(const Cell& currentCell, const Cell& nextCell) {
+void turnMouseToNextCell(const Cell &currentCell, const Cell &nextCell)
+{
     // Calculate direction needed based on current and next cell
     int dx = nextCell.getX() - currentCell.getX();
     int dy = nextCell.getY() - currentCell.getY();
@@ -120,19 +136,24 @@ void turnMouseToNextCell(const Cell& currentCell, const Cell& nextCell) {
 
     // Example placeholder logic
     // TODO: Implement actual direction and half-steps calculation based on MouseLocal's state
-    if (dx > 0) {
+    if (dx > 0)
+    {
         directionNeeded = 1; // Turn right
     }
-    else if (dx < 0) {
+    else if (dx < 0)
+    {
         directionNeeded = -1; // Turn left
     }
-    else {
+    else
+    {
         // Handle vertical movements if applicable
-        if (dy > 0) {
+        if (dy > 0)
+        {
             // Define logic for north
             directionNeeded = 1; // Example: turn right
         }
-        else if (dy < 0) {
+        else if (dy < 0)
+        {
             // Define logic for south
             directionNeeded = -1; // Example: turn left
         }
@@ -142,22 +163,30 @@ void turnMouseToNextCell(const Cell& currentCell, const Cell& nextCell) {
     // For now, setting to 0 as a placeholder
     halfStepsNeeded = 0; // Replace with actual calculation
 
-    if (halfStepsNeeded % 2 == 0) {
-        for (int i = 0; i < (halfStepsNeeded / 2); i++) {
-            if (directionNeeded == 1) {
+    if (halfStepsNeeded % 2 == 0)
+    {
+        for (int i = 0; i < (halfStepsNeeded / 2); i++)
+        {
+            if (directionNeeded == 1)
+            {
                 apiPtr->turnRight();
             }
-            else if (directionNeeded == -1) {
+            else if (directionNeeded == -1)
+            {
                 apiPtr->turnLeft();
             }
         }
     }
-    else {
-        for (int i = 0; i < halfStepsNeeded; i++) {
-            if (directionNeeded == 1) {
+    else
+    {
+        for (int i = 0; i < halfStepsNeeded; i++)
+        {
+            if (directionNeeded == 1)
+            {
                 apiPtr->turnRight45();
             }
-            else if (directionNeeded == -1) {
+            else if (directionNeeded == -1)
+            {
                 apiPtr->turnLeft45();
             }
         }
@@ -166,49 +195,67 @@ void turnMouseToNextCell(const Cell& currentCell, const Cell& nextCell) {
 
 /**
  * @brief Handles diagonal movements by analyzing the path and sending the correct commands to the API.
- * 
+ *
  * @param currCell The current Cell position of the mouse.
  * @param path The path as a string of movement commands.
- * @return std::string The modified path after handling diagonals.
+ * @return string The modified path after handling diagonals.
  */
-std::string diagonalizeAndRun(Cell& currCell, const std::string& path) {
-    std::ostringstream newPath;
-    std::vector<std::string> movements;
-    
+string diagonalizeAndRun(Cell &currCell, const string &path)
+{
+    ostringstream newPath;
+    vector<string> movements;
+
     // Split the path by '#' into tokens
-    std::stringstream ss(path);
-    std::string token;
-    while (std::getline(ss, token, '#')) {
-        if(!token.empty()) {
+    stringstream ss(path);
+    string token;
+    while (std::getline(ss, token, '#'))
+    {
+        if (!token.empty())
+        {
             movements.push_back(token);
         }
     }
 
-    std::string lastMovement;
-    int i = 0;
+    // FIXME - For debugging purposes
+    string movementsStr;
+    for (const auto &move : movements)
+    {
+        movementsStr += move;
+    }
+    log("[DEBUG] Test Path: " + movementsStr);
 
-    while (i < static_cast<int>(movements.size()) - 3) {
+    string lastMovement;
+    int i;
+
+    for (i = 0; i < static_cast<int>(movements.size()) - 3; i++)
+    {
         currCell = (mousePtr->getMousePosition());
         log("[DEBUG] Mouse CurrPos: (" + std::to_string(currCell.getX()) + ", " + std::to_string(currCell.getY()) + ")");
 
         // Check for specific movement patterns
-        if (movements[i] == "F" && (static_cast<int>(movements.size()) - i) > 4) {
+        if (movements[i] == "F" && (static_cast<int>(movements.size()) - i) > 4)
+        {
             i++;
-            std::string tempBlock = movements[i] + movements[i+1] + movements[i+2] + movements[i+3];
-            if (tempBlock == "RFRF" || tempBlock == "LFLF" || tempBlock == "RFLF" || tempBlock == "LFRF") {
+            string tempBlock = movements[i] + movements[i + 1] + movements[i + 2] + movements[i + 3];
+            if (tempBlock == "RFRF" || tempBlock == "LFLF" || tempBlock == "RFLF" || tempBlock == "LFRF")
+            {
                 log("[DEBUG] Temp Block: " + tempBlock);
-                if (lastMovement != "RFRF" && lastMovement != "LFLF" && lastMovement != "RFLF" && lastMovement != "LFRF") {
+                if (lastMovement != "RFRF" && lastMovement != "LFLF" && lastMovement != "RFLF" && lastMovement != "LFRF")
+                {
                     apiPtr->moveForwardHalf();
                     newPath << "FH#";
                     mousePtr->moveForwardLocal();
                 }
-                else {
-                    if (lastMovement == "RFLF" || lastMovement == "LFLF") {
+                else
+                {
+                    if (lastMovement == "RFLF" || lastMovement == "LFLF")
+                    {
                         newPath << "L#F#";
                         apiPtr->turnLeft();
                         apiPtr->moveForward();
                     }
-                    else if (lastMovement == "LFRF" || lastMovement == "RFRF") {
+                    else if (lastMovement == "LFRF" || lastMovement == "RFRF")
+                    {
                         newPath << "R#F#";
                         apiPtr->turnRight();
                         apiPtr->moveForward();
@@ -216,303 +263,341 @@ std::string diagonalizeAndRun(Cell& currCell, const std::string& path) {
                 }
                 lastMovement = "F";
             }
-            else {
+            else
+            {
                 i--;
             }
         }
 
-        // Handle movement blocks
-        if (i + 3 < static_cast<int>(movements.size())) {
-            std::string movementsBlock = movements[i] + movements[i+1] + movements[i+2] + movements[i+3];
-            log("[DEBUG] Movement Block: " + movementsBlock);
-            log("[DEBUG] Last Movement: " + lastMovement);
+        string movementsBlock = movements[i] + movements[i + 1] + movements[i + 2] + movements[i + 3];
+        log("[DEBUG] Movement Block: " + movementsBlock);
+        log("[DEBUG] Last Movement: " + lastMovement);
 
-            if (movementsBlock == "RFLF") {
-                if (lastMovement == movementsBlock || lastMovement == "LFLF") {
-                    newPath << "F#";
-                    apiPtr->moveForward();
-                }
-                else if (lastMovement == "LFRF" || lastMovement == "RFRF") {
-                    newPath << "R#F#";
-                    apiPtr->turnRight();
-                    apiPtr->moveForward();
-                }
-                else if (lastMovement == "F") {
-                    newPath << "R45#F#";
-                    apiPtr->turnRight45();
-                    apiPtr->moveForward();
-                }
-                else {
-                    newPath << "R#FH#L45#FH#";
-                    apiPtr->turnRight();
-                    apiPtr->moveForwardHalf();
-                    apiPtr->turnLeft45();
-                    apiPtr->moveForwardHalf();
-                    mousePtr->moveForwardLocal();
-                }
-                i += 4;
-                lastMovement = movementsBlock;
-                continue;
+        if (movementsBlock == "RFLF")
+        {
+            if (lastMovement == movementsBlock || lastMovement == "LFLF")
+            {
+                newPath << "F#";
+                apiPtr->moveForward();
             }
-            else if (movementsBlock == "LFRF") {
-                if (lastMovement == movementsBlock || lastMovement == "RFRF") {
-                    newPath << "F#";
-                    apiPtr->moveForward();
-                }
-                else if (lastMovement == "RFLF" || lastMovement == "LFLF") {
-                    newPath << "L#F#";
-                    apiPtr->turnLeft();
-                    apiPtr->moveForward();
-                }
-                else if (lastMovement == "F") {
-                    newPath << "L45#F#";
-                    apiPtr->turnLeft45();
-                    apiPtr->moveForward();
-                }
-                else {
-                    newPath << "L#FH#R45#FH#";
-                    apiPtr->turnLeft();
-                    apiPtr->moveForwardHalf();
-                    apiPtr->turnRight45();
-                    apiPtr->moveForwardHalf();
-                    mousePtr->moveForwardLocal();
-                }
-                i += 4;
-                lastMovement = movementsBlock;
-                continue;
+            else if (lastMovement == "LFRF" || lastMovement == "RFRF")
+            {
+                newPath << "R#F#";
+                apiPtr->turnRight();
+                apiPtr->moveForward();
             }
-            else if (movementsBlock == "RFRF") {
-                if (lastMovement == movementsBlock) {
-                    newPath << "R#FH#R#FH#";
-                    apiPtr->turnRight();
-                    apiPtr->moveForwardHalf();
-                    apiPtr->turnRight();
-                    apiPtr->moveForwardHalf();
-                    mousePtr->moveForwardLocal();
-                }
-                else if (lastMovement == "RFLF" || lastMovement == "LFLF") {
-                    newPath << "FH#R#FH#";
-                    apiPtr->moveForwardHalf();
-                    apiPtr->turnRight();
-                    apiPtr->moveForwardHalf();
-                    mousePtr->moveForwardLocal();
-                }
-                else if (lastMovement == "F") {
-                    newPath << "R45#FH#R#FH#";
-                    apiPtr->turnRight45();
-                    apiPtr->moveForwardHalf();
-                    apiPtr->turnRight();
-                    apiPtr->moveForwardHalf();
-                    mousePtr->moveForwardLocal();
-                }
-                else {
-                    newPath << "R#FH#R45#FH#";
-                    apiPtr->turnRight();
-                    apiPtr->moveForwardHalf();
-                    apiPtr->turnRight45();
-                    apiPtr->moveForwardHalf();
-                    mousePtr->moveForwardLocal();
-                }
-                i += 4;
-                lastMovement = movementsBlock;
-                continue;
+            else if (lastMovement == "F")
+            {
+                newPath << "R45#F#";
+                apiPtr->turnRight45();
+                apiPtr->moveForward();
             }
-            else if (movementsBlock == "LFLF") {
-                if (lastMovement == movementsBlock) {
-                    newPath << "L#FH#L#FH#";
-                    apiPtr->turnLeft();
+            else
+            {
+                newPath << "R#FH#L45#FH#";
+                apiPtr->turnRight();
+                apiPtr->moveForwardHalf();
+                apiPtr->turnLeft45();
+                apiPtr->moveForwardHalf();
+                mousePtr->moveForwardLocal();
+            }
+            i += 3;
+            lastMovement = movementsBlock;
+            continue;
+        }
+        else if (movementsBlock == "LFRF")
+        {
+            if (lastMovement == movementsBlock || lastMovement == "RFRF")
+            {
+                newPath << "F#";
+                apiPtr->moveForward();
+            }
+            else if (lastMovement == "RFLF" || lastMovement == "LFLF")
+            {
+                newPath << "L#F#";
+                apiPtr->turnLeft();
+                apiPtr->moveForward();
+            }
+            else if (lastMovement == "F")
+            {
+                newPath << "L45#F#";
+                apiPtr->turnLeft45();
+                apiPtr->moveForward();
+            }
+            else
+            {
+                newPath << "L#FH#R45#FH#";
+                apiPtr->turnLeft();
+                apiPtr->moveForwardHalf();
+                apiPtr->turnRight45();
+                apiPtr->moveForwardHalf();
+                mousePtr->moveForwardLocal();
+            }
+            i += 3;
+            lastMovement = movementsBlock;
+            continue;
+        }
+        else if (movementsBlock == "RFRF")
+        {
+            if (lastMovement == movementsBlock)
+            {
+                newPath << "R#FH#R#FH#";
+                apiPtr->turnRight();
+                apiPtr->moveForwardHalf();
+                apiPtr->turnRight();
+                apiPtr->moveForwardHalf();
+                mousePtr->moveForwardLocal();
+            }
+            else if (lastMovement == "RFLF" || lastMovement == "LFLF")
+            {
+                newPath << "FH#R#FH#";
+                apiPtr->moveForwardHalf();
+                apiPtr->turnRight();
+                apiPtr->moveForwardHalf();
+                mousePtr->moveForwardLocal();
+            }
+            else if (lastMovement == "F")
+            {
+                newPath << "R45#FH#R#FH#";
+                apiPtr->turnRight45();
+                apiPtr->moveForwardHalf();
+                apiPtr->turnRight();
+                apiPtr->moveForwardHalf();
+                mousePtr->moveForwardLocal();
+            }
+            else
+            {
+                newPath << "R#FH#R45#FH#";
+                apiPtr->turnRight();
+                apiPtr->moveForwardHalf();
+                apiPtr->turnRight45();
+                apiPtr->moveForwardHalf();
+                mousePtr->moveForwardLocal();
+            }
+            i += 3;
+            lastMovement = movementsBlock;
+            continue;
+        }
+        else if (movementsBlock == "LFLF")
+        {
+            if (lastMovement == movementsBlock)
+            {
+                newPath << "L#FH#L#FH#";
+                apiPtr->turnLeft();
+                apiPtr->moveForwardHalf();
+                apiPtr->turnLeft();
+                apiPtr->moveForwardHalf();
+                mousePtr->moveForwardLocal();
+            }
+            else if (lastMovement == "LFRF" || lastMovement == "RFRF")
+            {
+                newPath << "FH#L#FH#";
+                apiPtr->moveForwardHalf();
+                apiPtr->turnLeft();
+                apiPtr->moveForwardHalf();
+                mousePtr->moveForwardLocal();
+            }
+            else if (lastMovement == "F")
+            {
+                newPath << "L45#FH#L#FH#";
+                apiPtr->turnLeft45();
+                apiPtr->moveForwardHalf();
+                apiPtr->turnLeft();
+                apiPtr->moveForwardHalf();
+                mousePtr->moveForwardLocal();
+            }
+            else
+            {
+                newPath << "L#FH#L45#FH#";
+                apiPtr->turnLeft();
+                apiPtr->moveForwardHalf();
+                apiPtr->turnLeft45();
+                apiPtr->moveForwardHalf();
+                mousePtr->moveForwardLocal();
+            }
+            i += 3;
+            lastMovement = movementsBlock;
+            continue;
+        }
+        else
+        {
+            // Handle smaller blocks or default movements
+            if (lastMovement == "RFLF" || lastMovement == "LFLF")
+            {
+                if ((movements[i] + movements[i + 1] == "RF"))
+                {
+                    log("POPPPPPY");
+                    newPath << "FH#R45#FH#";
                     apiPtr->moveForwardHalf();
-                    apiPtr->turnLeft();
+                    apiPtr->turnRight45();
                     apiPtr->moveForwardHalf();
                     mousePtr->moveForwardLocal();
+                    i++;
+                    lastMovement = "RF";
+                    continue;
                 }
-                else if (lastMovement == "LFRF" || lastMovement == "RFRF") {
-                    newPath << "FH#L#FH#";
-                    apiPtr->moveForwardHalf();
-                    apiPtr->turnLeft();
-                    apiPtr->moveForwardHalf();
-                    mousePtr->moveForwardLocal();
-                }
-                else if (lastMovement == "F") {
-                    newPath << "L45#FH#L#FH#";
-                    apiPtr->turnLeft45();
-                    apiPtr->moveForwardHalf();
-                    apiPtr->turnLeft();
-                    apiPtr->moveForwardHalf();
-                    mousePtr->moveForwardLocal();
-                }
-                else {
+                else if ((movements[i] + movements[i + 1] == "LF"))
+                {
+                    log("POPPY");
                     newPath << "L#FH#L45#FH#";
                     apiPtr->turnLeft();
                     apiPtr->moveForwardHalf();
                     apiPtr->turnLeft45();
                     apiPtr->moveForwardHalf();
                     mousePtr->moveForwardLocal();
+                    i++;
+                    lastMovement = "LF";
+                    continue;
                 }
-                i += 4;
-                lastMovement = movementsBlock;
-                continue;
-            }
-            else {
-                // Handle smaller blocks or default movements
-                if (lastMovement == "RFLF" || lastMovement == "LFLF") {
-                    if ((movements[i] + movements[i + 1] == "RF")) {
-                        log("POPPPPPY");
-                        newPath << "FH#R45#FH#";
-                        apiPtr->moveForwardHalf();
-                        apiPtr->turnRight45();
-                        apiPtr->moveForwardHalf();
-                        mousePtr->moveForwardLocal();
-                        i += 2;
-                        lastMovement = "RF";
-                        continue;
-                    }
-                    else if ((movements[i] + movements[i + 1] == "LF")) {
-                        log("POPPY");
-                        newPath << "L#FH#L45#FH#";
-                        apiPtr->turnLeft();
-                        apiPtr->moveForwardHalf();
-                        apiPtr->turnLeft45();
-                        apiPtr->moveForwardHalf();
-                        mousePtr->moveForwardLocal();
-                        i += 2;
-                        lastMovement = "LF";
-                        continue;
-                    }
-                    else if ((i + 2 < static_cast<int>(movements.size())) && 
-                             (movements[i] + movements[i + 1] + movements[i + 2] == "FLF")) {
-                        log("POPPY");
-                        newPath << "L45#F#L45#FH#R45#FH#";
-                        apiPtr->turnLeft45();
-                        apiPtr->moveForwardHalf();
-                        apiPtr->moveForwardHalf();
-                        apiPtr->turnLeft45();
-                        apiPtr->moveForwardHalf();
-                        mousePtr->moveForwardLocal();
-                        apiPtr->turnLeft45();
-                        apiPtr->moveForwardHalf();
-                        i += 3;
-                        lastMovement = "F";
-                        continue;
-                    }
-                    newPath << "L45#FH#";
+                else if ((i + 2 < static_cast<int>(movements.size())) &&
+                         (movements[i] + movements[i + 1] + movements[i + 2] == "FLF"))
+                {
+                    log("POPPY");
+                    newPath << "L45#F#L45#FH#R45#FH#";
                     apiPtr->turnLeft45();
                     apiPtr->moveForwardHalf();
+                    apiPtr->moveForwardHalf();
+                    apiPtr->turnLeft45();
+                    apiPtr->moveForwardHalf();
+                    mousePtr->moveForwardLocal();
+                    apiPtr->turnLeft45();
+                    apiPtr->moveForwardHalf();
+                    i += 2;
+                    lastMovement = "F";
+                    continue;
                 }
-                else if (lastMovement == "LFRF" || lastMovement == "RFRF") {
-                    if ((movements[i] + movements[i + 1] == "LF")) {
-                        log("POPPY");
-                        newPath << "FH#L45#FH#";
-                        apiPtr->moveForwardHalf();
-                        apiPtr->turnLeft45();
-                        apiPtr->moveForwardHalf();
-                        mousePtr->moveForwardLocal();
-                        i += 2;
-                        lastMovement = "LF";
-                        continue;
-                    }
-                    else if ((movements[i] + movements[i + 1] == "RF")) {
-                        log("POPPPPY");
-                        newPath << "R#FH#R45#FH#";
-                        apiPtr->turnRight();
-                        apiPtr->moveForwardHalf();
-                        apiPtr->turnRight45();
-                        apiPtr->moveForwardHalf();
-                        mousePtr->moveForwardLocal();
-                        i += 2;
-                        lastMovement = "RF";
-                        continue;
-                    }
-                    else if ((i + 2 < static_cast<int>(movements.size())) && 
-                             (movements[i] + movements[i + 1] + movements[i + 2] == "FRF")) {
-                        log("POPPPPY");
-                        newPath << "R45#F#R45#FH#R45#FH#";
-                        apiPtr->turnRight45();
-                        apiPtr->moveForwardHalf();
-                        apiPtr->moveForwardHalf();
-                        apiPtr->turnRight45();
-                        apiPtr->moveForwardHalf();
-                        mousePtr->moveForwardLocal();
-                        apiPtr->turnRight45();
-                        apiPtr->moveForwardHalf();
-                        i += 3;
-                        lastMovement = "F";
-                        continue;
-                    }
-                    newPath << "R45#FH#";
+                newPath << "L45#FH#";
+                apiPtr->turnLeft45();
+                apiPtr->moveForwardHalf();
+            }
+            else if (lastMovement == "LFRF" || lastMovement == "RFRF")
+            {
+                if ((movements[i] + movements[i + 1] == "LF"))
+                {
+                    log("POPPY");
+                    newPath << "FH#L45#FH#";
+                    apiPtr->moveForwardHalf();
+                    apiPtr->turnLeft45();
+                    apiPtr->moveForwardHalf();
+                    mousePtr->moveForwardLocal();
+                    i++;
+                    lastMovement = "LF";
+                    continue;
+                }
+                else if ((movements[i] + movements[i + 1] == "RF"))
+                {
+                    log("POPPPPY");
+                    newPath << "R#FH#R45#FH#";
+                    apiPtr->turnRight();
+                    apiPtr->moveForwardHalf();
                     apiPtr->turnRight45();
                     apiPtr->moveForwardHalf();
+                    mousePtr->moveForwardLocal();
+                    i++;
+                    lastMovement = "RF";
+                    continue;
                 }
-
-                // Execute the current movement
-                newPath << movements[i] << "#";
-                if (movements[i] == "F") {
-                    apiPtr->moveForward();
+                else if ((i + 2 < static_cast<int>(movements.size())) &&
+                         (movements[i] + movements[i + 1] + movements[i + 2] == "FRF"))
+                {
+                    log("POPPPPY");
+                    newPath << "R45#F#R45#FH#R45#FH#";
+                    apiPtr->turnRight45();
+                    apiPtr->moveForwardHalf();
+                    apiPtr->moveForwardHalf();
+                    apiPtr->turnRight45();
+                    apiPtr->moveForwardHalf();
+                    mousePtr->moveForwardLocal();
+                    apiPtr->turnRight45();
+                    apiPtr->moveForwardHalf();
+                    i += 2;
+                    lastMovement = "F";
+                    continue;
                 }
-                else if (movements[i] == "L") {
-                    apiPtr->turnLeft();
-                }
-                else if (movements[i] == "R") {
-                    apiPtr->turnRight();
-                }
-                else {
-                    log("[ERROR] Invalid Movement: " + movements[i]);
-                }
-                lastMovement = movements[i];
-                i++;
+                newPath << "R45#FH#";
+                apiPtr->turnRight45();
+                apiPtr->moveForwardHalf();
             }
+
+            // Execute the current movement
+            newPath << movements[i] << "#";
+            if (movements[i] == "F")
+            {
+                apiPtr->moveForward();
+            }
+            else if (movements[i] == "L")
+            {
+                apiPtr->turnLeft();
+            }
+            else if (movements[i] == "R")
+            {
+                apiPtr->turnRight();
+            }
+            else
+            {
+                log("[ERROR] Invalid Movement: " + movements[i]);
+            }
+            lastMovement = movements[i];
+            continue; // FIXME
         }
 
         // Handle remaining movements after main loop
-        if (lastMovement == "RFLF" || lastMovement == "LFLF") {
+        if (lastMovement == "RFLF" || lastMovement == "LFLF")
+        {
             newPath << "L45#FH#";
             apiPtr->turnLeft45();
             apiPtr->moveForwardHalf();
         }
-        else if (lastMovement == "LFRF" || lastMovement == "RFRF") {
+        else if (lastMovement == "LFRF" || lastMovement == "RFRF")
+        {
             newPath << "R45#FH#";
             apiPtr->turnRight45();
             apiPtr->moveForwardHalf();
         }
 
         // Process any remaining movements
-        if (i < static_cast<int>(movements.size())) {
+        if (i < static_cast<int>(movements.size()))
+        {
             log("Moves remaining: " + std::to_string(movements.size() - i) + " with moves being ...");
-            for (int j = i; j < static_cast<int>(movements.size()); j++) {
+            for (int j = i; j < static_cast<int>(movements.size()); j++)
+            {
                 log("[DEBUG] Movement: " + movements[j]);
                 currCell = (mousePtr->getMousePosition());
                 log("[DEBUG] Mouse CurrPos: (" + std::to_string(currCell.getX()) + ", " + std::to_string(currCell.getY()) + ")");
 
-                if (movements[j] == "F") {
+                if (movements[j] == "F")
+                {
                     apiPtr->moveForward();
                 }
-                else if (movements[j] == "L") {
+                else if (movements[j] == "L")
+                {
                     apiPtr->turnLeft();
                 }
-                else if (movements[j] == "R") {
+                else if (movements[j] == "R")
+                {
                     apiPtr->turnRight();
                 }
-                else {
+                else
+                {
                     log("[ERROR] Invalid Movement: " + movements[j]);
                 }
             }
             currCell = (mousePtr->getMousePosition());
             log("[DEBUG] Mouse CurrPos: (" + std::to_string(currCell.getX()) + ", " + std::to_string(currCell.getY()) + ")");
         }
-        else {
+        else
+        {
             currCell = (mousePtr->getMousePosition());
             log("[DEBUG] Mouse CurrPos: (" + std::to_string(currCell.getX()) + ", " + std::to_string(currCell.getY()) + ")");
         }
-
-            return newPath.str();
-        }
-
-        return std::string();
+        return newPath.str();
     }
+    return newPath.str();
+}
 
 /**
  * @brief Traverses a single goal cell iteratively.
- * 
+ *
  * @param mouse Pointer to the MouseLocal instance.
  * @param goalCell The target Cell to traverse to.
  * @param diagonalsAllowed Whether diagonal movements are permitted.
@@ -521,20 +606,20 @@ std::string diagonalizeAndRun(Cell& currCell, const std::string& path) {
  * @return true If traversal was successful.
  * @return false If traversal failed.
  */
-bool traversePathIteratively(MouseLocal* mouse, 
-                             Cell& goalCell, 
+bool traversePathIteratively(MouseLocal *mouse,
+                             Cell &goalCell,
                              bool diagonalsAllowed,
-                             bool allExplored, 
-                             bool avoidGoalCells) 
+                             bool allExplored,
+                             bool avoidGoalCells)
 {
-    std::vector<Cell*> goalCells;
+    vector<Cell *> goalCells;
     goalCells.push_back(&goalCell);
     return traversePathIteratively(mouse, goalCells, diagonalsAllowed, allExplored, avoidGoalCells);
 }
 
 /**
  * @brief Traverses multiple goal cells iteratively.
- * 
+ *
  * @param mouse Pointer to the MouseLocal instance.
  * @param goalCells A vector of target Cells to traverse to.
  * @param diagonalsAllowed Whether diagonal movements are permitted.
@@ -543,26 +628,30 @@ bool traversePathIteratively(MouseLocal* mouse,
  * @return true If traversal was successful for all goals.
  * @return false If traversal failed for any goal.
  */
-bool traversePathIteratively(MouseLocal* mouse, 
-                             std::vector<Cell*>& goalCells, 
+bool traversePathIteratively(MouseLocal *mouse,
+                             vector<Cell *> &goalCells,
                              bool diagonalsAllowed,
-                             bool allExplored, 
-                             bool avoidGoalCells) 
+                             bool allExplored,
+                             bool avoidGoalCells)
 {
-    Cell currCell(0, 0); // Initialize with appropriate constructor arguments
-    Movement* prevMov = nullptr; // Assuming Movement is a class with pointer semantics
+    Cell currCell(0, 0);         // Initialize with appropriate constructor arguments
+    Movement *prevMov = nullptr; // Assuming Movement is a class with pointer semantics
 
-    if (allExplored) {
+    if (allExplored)
+    {
         setAllExplored(mouse);
     }
 
-    while (true) {
+    while (true)
+    {
         currCell = (mouse->getMousePosition());
         currCell.setIsExplored(true);
 
-        if (mouse->isGoalCell(currCell, goalCells)) {
+        if (mouse->isGoalCell(currCell, goalCells))
+        {
             // If the previous movement was diagonal, handle that.
-            if (prevMov != nullptr && prevMov->getIsDiagonal()) {
+            if (prevMov != nullptr && prevMov->getIsDiagonal())
+            {
                 turnMouseToNextCell(*(prevMov->getFirstMove()), currCell);
                 apiPtr->moveForwardHalf();
             }
@@ -573,69 +662,80 @@ bool traversePathIteratively(MouseLocal* mouse,
         // Detect walls
         mouse->detectAndSetWalls(*apiPtr); // Pass API if needed
 
-
-        //std::vector<Cell*> goalCells2();
-        //std::vector<Cell*> goalCells2;
+        // vector<Cell*> goalCells2();
+        // vector<Cell*> goalCells2;
 
         // Get path from A* or your best algorithm
-        std::vector<Cell*> cellPath = getBestAlgorithmPath(aStarPtr, goalCells, diagonalsAllowed, avoidGoalCells);
+        vector<Cell *> cellPath = getBestAlgorithmPath(aStarPtr, goalCells, diagonalsAllowed, avoidGoalCells);
 
         // If you want to color the path
-        if (Constants::MazeConstants::showPath && allExplored 
-            && !MouseLocal::isSame(*goalCells[0], (mouse->getCell(0,0)))) 
+        if (Constants::MazeConstants::showPath && allExplored && !MouseLocal::isSame(*goalCells[0], (mouse->getCell(0, 0))))
         {
-            for (const auto& c : cellPath) {
+            for (const auto &c : cellPath)
+            {
                 apiPtr->setColor(c->getX(), c->getY(), Constants::MazeConstants::goalPathColor);
             }
-        } 
-        else if (Constants::MazeConstants::showPath && allExplored && goalCells.size() == 1) {
-            for (const auto& c : cellPath) {
+        }
+        else if (Constants::MazeConstants::showPath && allExplored && goalCells.size() == 1)
+        {
+            for (const auto &c : cellPath)
+            {
                 apiPtr->setColor(c->getX(), c->getY(), Constants::MazeConstants::returnPathColor);
             }
         }
 
         // Log the algorithm path
-        std::string algPathStr = "";
-        for (const auto& c : cellPath) {
+        string algPathStr = "";
+        for (const auto &c : cellPath)
+        {
             algPathStr += "(" + std::to_string(c->getX()) + ", " + std::to_string(c->getY()) + ") -> ";
         }
         log("[PROCESSED] Algorithm Path: " + algPathStr);
 
         // Convert path to string
-        std::vector<Cell*> cellPathPtrs;
-        for (auto& cell : cellPath) {
+        vector<Cell *> cellPathPtrs;
+        for (auto &cell : cellPath)
+        {
             cellPathPtrs.push_back(cell);
         }
-        std::string path = AStar::pathToString(*mouse, cellPathPtrs);
+        string path = AStar::pathToString(*mouse, cellPathPtrs);
         // log("[PROCESSED] Path: " + path); // Optional logging
 
-        if(allExplored && diagonalsAllowed) {
+        if (allExplored && diagonalsAllowed)
+        {
             log("[PROCESSED] Path: " + path);
             path = diagonalizeAndRun(currCell, path);
             log("[PROCESSED] Diagonalized Path: " + path);
-        } 
-        else {
+        }
+        else
+        {
             // Execute the movement commands step-by-step
-            std::stringstream ss(path);
-            std::string move;
-            while (std::getline(ss, move, '#')) {
-                if (move == "F") {
+            stringstream ss(path);
+            string move;
+            while (std::getline(ss, move, '#'))
+            {
+                if (move == "F")
+                {
                     apiPtr->moveForward();
-                } 
-                else if (move == "L") {
+                }
+                else if (move == "L")
+                {
                     apiPtr->turnLeft();
-                } 
-                else if (move == "R") {
+                }
+                else if (move == "R")
+                {
                     apiPtr->turnRight();
-                } 
-                else {
+                }
+                else
+                {
                     log("[ERROR] Invalid Movement: " + move);
                 }
 
                 currCell = (mouse->getMousePosition());
                 log("[POS] Updated Mouse Position: (" + std::to_string(currCell.getX()) + ", " + std::to_string(currCell.getY()) + ")\n");
 
-                if (!currCell.getIsExplored()) {
+                if (!currCell.getIsExplored())
+                {
                     log("[RE-CALC] Cell is unexplored, calculating new path.");
                     break;
                 }
@@ -649,44 +749,41 @@ bool traversePathIteratively(MouseLocal* mouse,
 
 /**
  * @brief The entry point of the program.
- * 
+ *
  * @return int Exit status of the program.
  */
-int main() {
-    // Create the objects
+int main()
+{
     mousePtr = new MouseLocal();
     apiPtr = new API(mousePtr);
     aStarPtr = new AStar();
     frontierBasedPtr = new FrontierBased();
 
     // Initialize start and goal cells
-    std::vector<Cell*> startCell;
+    vector<Cell *> startCell;
     startCell.push_back(&(mousePtr->getMousePosition()));
-    std::vector<Cell*> goalCells = mousePtr->getGoalCells();
+    vector<Cell *> goalCells = mousePtr->getGoalCells();
 
     setUp(*startCell[0], goalCells);
 
     // Begin exploration
-    frontierBasedPtr->explore(*mousePtr, *apiPtr, false);
+    // frontierBasedPtr->explore(*mousePtr, *apiPtr, false);
 
     // Sleep 2 seconds to mimic Thread.sleep(2000)
-    std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+    // std::this_thread::sleep_for(std::chrono::milliseconds(2000));
 
-    setUp((mousePtr->getMousePosition()), startCell);
-    traversePathIteratively(mousePtr, startCell, false, true, false);
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    // setUp((mousePtr->getMousePosition()), startCell);
+    // traversePathIteratively(mousePtr, startCell, false, true, false);
+    // std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
     setUp(*startCell[0], goalCells);
     traversePathIteratively(mousePtr, goalCells, true, true, false);
     std::this_thread::sleep_for(std::chrono::milliseconds(2000));
 
     // Cleanup dynamically allocated memory
-
-
     delete frontierBasedPtr;
     delete aStarPtr;
     delete apiPtr;
     delete mousePtr;
-
     return 0;
 }

@@ -1,66 +1,71 @@
 #include "AStar.h"
-#include "../Constants.h" 
-#include <algorithm>
-#include <cmath>
-#include <stdexcept>
-#include <sstream>
 
-// Constructor
-AStar::AStar() {
-    // No initialization required for this implementation
-}
+AStar::AStar() {}
 
-// Finds the A* path from mouse to goalCell
-std::vector<Cell*> AStar::findAStarPath(MouseLocal& mouse, Cell& goalCell, bool diagonalsAllowed, bool avoidGoalCells) {
+vector<Cell *> AStar::findAStarPath(MouseLocal &mouse, Cell &goalCell, bool diagonalsAllowed, bool avoidGoalCells)
+{
     mouse.resetCosts();
-    Cell& currCell = mouse.getMousePosition();
+    Cell &currCell = mouse.getMousePosition();
 
-    // Priority queue with custom comparator
-    std::priority_queue<Cell*, std::vector<Cell*>, CompareCell> discoveredCell;
+    priority_queue<Cell *, vector<Cell *>, CompareCell> discoveredCell;
+    vector<vector<bool>> procCells(Constants::MazeConstants::numCols, vector<bool>(Constants::MazeConstants::numRows, false));
 
-    // Processed cells grid
-    std::vector<std::vector<bool>> procCells(Constants::MazeConstants::numCols, std::vector<bool>(Constants::MazeConstants::numRows, false));
+    /*
+     * It is beneficial to visualize the mathematics in A* as follows:
+     * - f(n) = g(n) + h(n)
+     * - f(n) is the total cost of the cell.
+     * - g(n) is the cost from the starting cell to the current cell.
+     * - h(n) is the heuristic cost from the current cell to the goal cell.
+     * --------------(Octile heuristic in this case)----------------------
+     *
+     * Essentially, the total cost is the sum of the cost from the start + heuristic
+     * cost from the current cell to the goal cell.
+     */
 
-    // Initialize start cell
-    Cell& startCell = mouse.getCell(currCell.getX(), currCell.getY());
+    Cell &startCell = mouse.getCell(currCell.getX(), currCell.getY());
     startCell.setCostFromStart(0.0);
     startCell.setTotalCost(MouseLocal::octileDistance(startCell, goalCell));
     discoveredCell.push(&startCell);
 
-    // A* Algorithm Loop
-    while (!discoveredCell.empty()) {
-        Cell* procCell = discoveredCell.top();
+    // Analyzes to-be-processed cells until goal is reached.
+    while (!discoveredCell.empty())
+    {
+        Cell *procCell = discoveredCell.top();
         discoveredCell.pop();
 
-        if (MouseLocal::isSame(*procCell, goalCell)) {
+        if (MouseLocal::isSame(*procCell, goalCell))
+        {
             return reconstructPath(currCell, goalCell);
         }
-
-        if (procCells[procCell->getX()][procCell->getY()]) {
+        else if (procCells[procCell->getX()][procCell->getY()])
+        {
             continue;
         }
+        procCells[procCell->getX()][procCell->getY()] = true; // Marks the cell as processed.
 
-        procCells[procCell->getX()][procCell->getY()] = true; // Mark as processed
-
-        std::vector<Cell*> neighbors = mouse.getNeighbors(*procCell, diagonalsAllowed);
-        for (Cell* neighbor : neighbors) {
-            if (procCells[neighbor->getX()][neighbor->getY()]) {
+        vector<Cell *> neighbors = mouse.getNeighbors(*procCell, diagonalsAllowed);
+        for (Cell *neighbor : neighbors)
+        {
+            if (procCells[neighbor->getX()][neighbor->getY()])
+            {
                 continue;
             }
 
-            if (avoidGoalCells && mouse.isGoalCell(*neighbor, mouse.getGoalCells())) {
+            if (avoidGoalCells && mouse.isGoalCell(*neighbor, mouse.getGoalCells()))
+            {
                 continue;
             }
 
             Movement movement = mouse.getMovement(*procCell, *neighbor, diagonalsAllowed);
-            if (!movement.getCanMove()) {
+            if (!movement.getCanMove())
+            {
                 continue;
             }
 
             double costToNeighbor = MouseLocal::euclideanDistance(*procCell, *neighbor);
             double costFromStart = procCell->getCostFromStart() + costToNeighbor;
-
-            if (costFromStart < neighbor->getCostFromStart()) { // Update neighbor costs
+            if (costFromStart < neighbor->getCostFromStart())
+            { // Update neighbor costs.
                 neighbor->setCostFromStart(costFromStart);
                 neighbor->setTotalCost(costFromStart + MouseLocal::octileDistance(*neighbor, goalCell));
                 neighbor->setPrevCellInPath(procCell);
@@ -68,115 +73,128 @@ std::vector<Cell*> AStar::findAStarPath(MouseLocal& mouse, Cell& goalCell, bool 
             }
         }
     }
-
-    return std::vector<Cell*>(); // No path was found
+    return vector<Cell *>(); // No path was found
 }
 
-// Reconstructs the path from goal to start
-std::vector<Cell*> AStar::reconstructPath(Cell& startingCell, Cell& goalCell) {
-    std::vector<Cell*> path;
-    Cell* pointer = &goalCell;
-
-    while (!MouseLocal::isSame(*pointer, startingCell)) {
+vector<Cell *> AStar::reconstructPath(Cell &startingCell, Cell &goalCell)
+{
+    vector<Cell *> path;
+    Cell *pointer = &goalCell;
+    while (!MouseLocal::isSame(*pointer, startingCell))
+    {
         path.push_back(pointer);
         pointer = pointer->getPrevCellInPath();
-        if (pointer == nullptr) {
-            // Path reconstruction failed
-            return std::vector<Cell*>();
-        }
     }
-
+    // Reverse to start + 1 -> goal.
     std::reverse(path.begin(), path.end());
     return path;
 }
 
 // Converts the path into a string of movement commands
-std::string AStar::pathToString(MouseLocal& mouse, const std::vector<Cell*>& path) {
-    std::stringstream pathString;
-    Cell& origCell = mouse.getMousePosition();
-    std::array<int, 2> origDir = mouse.getMouseDirection();
+string AStar::pathToString(MouseLocal &mouse, const vector<Cell *> &path)
+{
+    stringstream pathString;
+    Cell &origCell = mouse.getMousePosition();
+    array<int, 2> origDir = mouse.getMouseDirection();
 
-    Cell* currCell = &origCell;
+    Cell *currCell = &origCell;
 
-    for (Cell* nextCell : path) {
-        // Determine new direction
-        std::array<int, 2> newDir = MouseLocal::getDirBetweenCells(*currCell, *nextCell);
-        std::array<int, 2> turns = mouse.obtainHalfStepCount(newDir);
+    for (Cell *nextCell : path)
+    {
+        // LOG_DEBUG("Current cell " + std::to_string(currCell->getX()) + ", " + std::to_string(currCell->getY()) + " to next cell " + std::to_string(nextCell->getX()) + ", " + std::to_string(nextCell->getY()));
+        // LOG_DEBUG("Current direction: " + std::to_string(mouse.getMouseDirection()[0]) + ", " + std::to_string(mouse.getMouseDirection()[1]));
+        array<int, 2> newDir = MouseLocal::getDirBetweenCells(*currCell, *nextCell);
+        // LOG_DEBUG("New direction: " + std::to_string(newDir[0]) + ", " + std::to_string(newDir[1]));
+        array<int, 2> turns = mouse.obtainHalfStepCount(newDir);
 
-        if (turns[0] % 2 == 0) { // Even number of half steps
-            if (turns[1] == 1) { // Right turn
-                for (int i = 0; i < turns[0] / 2; i++) {
+        // If even or odd # of turns needed.
+        if (turns[0] % 2 == 0)
+        {
+            if (turns[1] == 1)
+            {
+                for (int i = 0; i < turns[0] / 2; i++)
+                {
                     pathString << "R#";
                 }
                 mouse.turnMouseLocal(0, turns[0]);
                 pathString << "F#";
                 mouse.moveForwardLocal();
-            } else { // Left turn
-                for (int i = 0; i < turns[0] / 2; i++) {
+            }
+            else
+            {
+                for (int i = 0; i < turns[0] / 2; i++)
+                {
                     pathString << "L#";
                 }
                 mouse.turnMouseLocal(turns[0], 0);
                 pathString << "F#";
                 mouse.moveForwardLocal();
             }
-        } else { // Odd number of half steps (diagonal movement)
-            Movement movement = mouse.getMovement(*currCell, *nextCell, true);
-            Cell* cellToMoveToFirst = movement.getFirstMove();
-
-            if (cellToMoveToFirst == nullptr) {
-                // Cannot perform diagonal movement without intermediate cell
-                continue;
-            }
-
-            // Determine required turns to reach the first intermediate cell
-            std::array<int, 2> neededDir = MouseLocal::getDirBetweenCells(*currCell, *cellToMoveToFirst);
-            std::array<int, 2> firstTurns = mouse.obtainHalfStepCount(neededDir);
-
-            for (int i = 0; i < firstTurns[0] / 2; i++) {
-                if (firstTurns[1] == 1) {
+        }
+        else
+        {
+            Cell *cellToMoveToFirst = mouse.getMovement(*currCell, *nextCell, true).getFirstMove();
+            // LOG_DEBUG("Intermediate cell: " + cellToMoveToFirst->toString());
+            array<int, 2> neededDir = MouseLocal::getDirBetweenCells(*currCell, *cellToMoveToFirst);
+            // LOG_DEBUG("Needed direction: " + std::to_string(neededDir[0]) + ", " + std::to_string(neededDir[1]));
+            array<int, 2> firstTurns = mouse.obtainHalfStepCount(neededDir);
+            // LOG_DEBUG("First turns: " + std::to_string(firstTurns[0]) + ", " + std::to_string(firstTurns[1]));
+            for (int i = 0; i < firstTurns[0] / 2; i++)
+            {
+                if (firstTurns[1] == 1)
+                {
                     pathString << "R#";
-                } else {
+                }
+                else
+                {
                     pathString << "L#";
                 }
             }
-            if (firstTurns[1] == 1) {
+            if (firstTurns[1] == 1)
+            {
                 mouse.turnMouseLocal(0, firstTurns[0]);
-            } else {
+            }
+            else
+            {
                 mouse.turnMouseLocal(firstTurns[0], 0);
             }
 
             pathString << "F#";
             mouse.moveForwardLocal();
 
-            // Determine required turns to reach the next cell from the intermediate cell
-            std::array<int, 2> secNeededDir = MouseLocal::getDirBetweenCells(*cellToMoveToFirst, *nextCell);
-            std::array<int, 2> secTurns = mouse.obtainHalfStepCount(secNeededDir);
+            // LOG_DEBUG("Current direction: " + std::to_string(mouse.getMouseDirection()[0]) + ", " + std::to_string(mouse.getMouseDirection()[1]));
 
-            for (int i = 0; i < secTurns[0] / 2; i++) {
-                if (secTurns[1] == 1) {
+            array<int, 2> secNeededDir = MouseLocal::getDirBetweenCells(*cellToMoveToFirst, *nextCell);
+            // LOG_DEBUG("Second needed direction: " + std::to_string(secNeededDir[0]) + ", " + std::to_string(secNeededDir[1]));
+            array<int, 2> secTurns = mouse.obtainHalfStepCount(secNeededDir);
+            // LOG_DEBUG("Second turns: " + std::to_string(secTurns[0]) + ", " + std::to_string(secTurns[1]));
+            for (int i = 0; i < secTurns[0] / 2; i++)
+            {
+                if (secTurns[1] == 1)
+                {
                     pathString << "R#";
-                } else {
+                }
+                else
+                {
                     pathString << "L#";
                 }
             }
-            if (secTurns[1] == 1) {
+            if (secTurns[1] == 1)
+            {
                 mouse.turnMouseLocal(0, secTurns[0]);
-            } else {
+            }
+            else
+            {
                 mouse.turnMouseLocal(secTurns[0], 0);
             }
-
+            // LOG_DEBUG("Current direction: " + std::to_string(mouse.getMouseDirection()[0]) + ", " + std::to_string(mouse.getMouseDirection()[1]));
             pathString << "F#";
             mouse.moveForwardLocal();
-
-            currCell = mouse.getMousePosition().getPrevCellInPath(); // Update current cell
         }
-
         currCell = &mouse.getMousePosition();
     }
 
-    // Restore original position and direction
     mouse.setMousePosition(origCell);
     mouse.setMouseDirection(origDir);
-
     return pathString.str();
 }

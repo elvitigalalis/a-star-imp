@@ -5,13 +5,17 @@
 #include <array>
 #include <stdexcept>
 
-class Cell {
+using std::array;
+using std::string;
+
+class Cell
+{
 public:
     // Constructor
     Cell(int x, int y);
 
     // Method to add a wall based on direction
-    void addWall(const std::array<int, 2>& direction, bool isShared);
+    void addWall(const array<int, 2> &direction, bool isShared);
 
     // Getters and Setters
     int getX() const;
@@ -23,7 +27,7 @@ public:
     void incrementTremauxCount();
 
     // Wall existence checks
-    bool getWallExists(const std::array<int, 2>& direction) const;
+    bool getWallExists(const array<int, 2> &direction) const;
     bool getNorthWallExists() const;
     bool getEastWallExists() const;
     bool getSouthWallExists() const;
@@ -36,8 +40,8 @@ public:
     bool getWestWallIsShared() const;
 
     // Previous cell in path
-    Cell* getPrevCellInPath() const;
-    void setPrevCellInPath(Cell* prevCellInPath);
+    Cell *getPrevCellInPath() const;
+    void setPrevCellInPath(Cell *prevCellInPath);
 
     // Cost-related methods
     void setCostFromStart(double costFromStart);
@@ -46,16 +50,17 @@ public:
     double getTotalCost() const;
 
     // String representation
-    std::string toString() const;
+    string toString() const;
 
     // Nested Wall class
-    class Wall {
+    class Wall
+    {
     public:
         Wall();
         bool getExists() const;
         void setExists(bool isShared);
         bool getIsShared() const;
-        std::string toString() const;
+        string toString() const;
 
     private:
         bool exists;
@@ -74,7 +79,7 @@ private:
     Wall eastWall;
     Wall southWall;
     Wall westWall;
-    Cell* prevCellInPath;
+    Cell *prevCellInPath;
 };
 
 #endif // CELL_H

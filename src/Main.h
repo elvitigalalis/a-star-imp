@@ -16,25 +16,7 @@
 #include "Algorithm/Maze/MouseLocal.h"
 #include "Algorithm/Maze/Movement.h"
 
-// Namespace for constants
-namespace Constants {
-    namespace MazeConstants {
-        static const int numCols = 16;
-        static const int numRows = 16;
-        static const bool showGrid = true;
-        static const bool showPath = true;
-        static const char startCellColor = 'S';
-        static const std::string startCellText = "Start";
-        static const char goalCellColor = 'G';
-        static const std::string goalCellText = "Goal";
-        static const char goalPathColor = 'Y';
-        static const char returnPathColor = 'B';
-    }
-
-    namespace MouseConstants {
-        static const std::string mouseName = "DefaultMouse";
-    }
-}
+using std::vector;
 
 // Forward declarations of classes
 class Cell;
@@ -56,7 +38,7 @@ extern FrontierBased* frontierBasedPtr;
  * 
  * @param text The message to log.
  */
-void log(const std::string& text);
+void log(const string& text);
 
 /**
  * @brief Sets up the maze walls, grid text/colors, etc.
@@ -64,7 +46,7 @@ void log(const std::string& text);
  * @param startCell The starting Cell of the mouse.
  * @param goalCells A vector of goal Cells.
  */
-void setUp(const Cell& startCell, const std::vector<Cell*>& goalCells);
+void setUp(const Cell& startCell, const vector<Cell*>& goalCells);
 
 /**
  * @brief Marks all cells in the maze as explored.
@@ -80,11 +62,11 @@ void setAllExplored(MouseLocal* mouse);
  * @param goalCells A vector of goal Cells.
  * @param diagonalsAllowed Whether diagonal movements are permitted.
  * @param avoidGoalCells Whether to avoid goal cells during pathfinding.
- * @return std::vector<Cell*> The best path as a vector of Cells.
+ * @return vector<Cell*> The best path as a vector of Cells.
  */
  //..
-std::vector<Cell*> getBestAlgorithmPath(AStar* aStar, 
-                                      std::vector<Cell*>& goalCells, 
+vector<Cell*> getBestAlgorithmPath(AStar* aStar, 
+                                      vector<Cell*>& goalCells, 
                                       bool diagonalsAllowed,
                                       bool avoidGoalCells);
 
@@ -101,9 +83,9 @@ void turnMouseToNextCell(const Cell& currentCell, const Cell& nextCell);
  * 
  * @param currCell The current Cell position of the mouse.
  * @param path The path as a string of movement commands.
- * @return std::string The modified path after handling diagonals.
+ * @return string The modified path after handling diagonals.
  */
-std::string diagonalizeAndRun(Cell& currCell, const std::string& path);
+string diagonalizeAndRun(Cell& currCell, const string& path);
 
 /**
  * @brief Traverses a single goal cell iteratively.
@@ -134,7 +116,7 @@ bool traversePathIteratively(MouseLocal* mouse,
  * @return false If traversal failed for any goal.
  */
 bool traversePathIteratively(MouseLocal* mouse, 
-                             std::vector<Cell*>& goalCells, 
+                             vector<Cell*>& goalCells, 
                              bool diagonalsAllowed,
                              bool allExplored, 
                              bool avoidGoalCells);
