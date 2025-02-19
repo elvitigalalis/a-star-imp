@@ -19,8 +19,6 @@ string API::getResponse(const string &commandUsed)
 
     std::getline(std::cin, response); // Read full line response
     return response;
-
-    // return (std::rand() % 2) == 1 ? "true" : "false";
 }
 
 /**
@@ -187,7 +185,7 @@ void API::moveForwardHalf()
     {
         // FIXME: Implement half movement logic if applicable
         // For now, we assume a half step is equivalent to a full step
-        mouseLocal->moveForwardLocal();
+        // mouseLocal->moveForwardLocal();
     }
     else
     {
