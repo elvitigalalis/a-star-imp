@@ -15,14 +15,15 @@ public class API {
         input = new Scanner(System.in);
         this.mouseLocal = mouseLocal;
     }
+
     /*
-    ----------------------------------------------------------------
-    Internal helper methods for reading from simulator
-    ----------------------------------------------------------------
-    */
+     * ----------------------------------------------------------------
+     * Internal helper methods for reading from simulator
+     * ----------------------------------------------------------------
+     */
     private String getResponse(String commandUsed) {
-        System.out.println(commandUsed);           // Ask simulator
-        return input.nextLine();                 // Read response
+        System.out.println(commandUsed); // Ask simulator
+        return input.nextLine(); // Read response
     }
 
     private int getIntegerResponse(String commandUsed) {
@@ -38,10 +39,10 @@ public class API {
     }
 
     /*
-    ----------------------------------------------------------------
-    Maze dimension queries
-    ----------------------------------------------------------------
-    */
+     * ----------------------------------------------------------------
+     * Maze dimension queries
+     * ----------------------------------------------------------------
+     */
     public int mazeWidth() {
         return getIntegerResponse("mazeWidth");
     }
@@ -51,10 +52,10 @@ public class API {
     }
 
     /*
-    ----------------------------------------------------------------
-    Wall queries
-    ----------------------------------------------------------------
-    */
+     * ----------------------------------------------------------------
+     * Wall queries
+     * ----------------------------------------------------------------
+     */
     public boolean wallFront() {
         return getBooleanResponse("wallFront");
     }
@@ -68,10 +69,10 @@ public class API {
     }
 
     /*
-    ----------------------------------------------------------------
-    Mouse movement commands
-    ----------------------------------------------------------------
-    */
+     * ----------------------------------------------------------------
+     * Mouse movement commands
+     * ----------------------------------------------------------------
+     */
     public void moveForward() {
         boolean ack = getAck("moveForward");
 
@@ -136,10 +137,10 @@ public class API {
     }
 
     /*
-    ----------------------------------------------------------------
-    Set / clear walls
-    ----------------------------------------------------------------
-    */
+     * ----------------------------------------------------------------
+     * Set / clear walls
+     * ----------------------------------------------------------------
+     */
     public void setWall(int x, int y, String direction) {
         switch (direction) {
             case "n", "e", "s", "w" -> {
@@ -160,10 +161,10 @@ public class API {
     }
 
     /*
-    ----------------------------------------------------------------
-    Cell color / text
-    ----------------------------------------------------------------
-    */
+     * ----------------------------------------------------------------
+     * Cell color / text
+     * ----------------------------------------------------------------
+     */
     public void setColor(int x, int y, char color) {
         System.out.println("setColor " + x + " " + y + " " + color);
     }
@@ -189,10 +190,10 @@ public class API {
     }
 
     /*
-    ----------------------------------------------------------------
-    Reset booleans
-    ----------------------------------------------------------------
-    */
+     * ----------------------------------------------------------------
+     * Reset booleans
+     * ----------------------------------------------------------------
+     */
     public boolean wasReset() {
         return getBooleanResponse("wasReset");
     }

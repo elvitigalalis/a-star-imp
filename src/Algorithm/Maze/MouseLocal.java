@@ -1,6 +1,5 @@
 package src.Algorithm.Maze;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -28,6 +27,7 @@ public class MouseLocal {
          * Thus, getting element 0, 1 will return the cell above the bottom-left cell
          * according to the following array logic.
          */
+
         setUpMazeLocal();
     }
 
@@ -119,7 +119,8 @@ public class MouseLocal {
                 return i;
             }
         }
-        throw new IllegalArgumentException("Direction not listed as a possible mouse direction: " + Arrays.toString(direction));
+        throw new IllegalArgumentException(
+                "Direction not listed as a possible mouse direction: " + Arrays.toString(direction));
     }
 
     /**
@@ -180,7 +181,8 @@ public class MouseLocal {
     public Movement getMovement(Cell cell1, Cell cell2, boolean diagonalsAllowed) {
         int[] direction = new int[] { cell2.getX() - cell1.getX(), cell2.getY() - cell1.getY() };
         try {
-            if(Math.sqrt(Math.pow(direction[0], 2) + Math.pow(direction[1], 2)) != 1 && Math.sqrt(Math.pow(direction[0], 2) + Math.pow(direction[1], 2)) != Math.sqrt(2)) {
+            if (Math.sqrt(Math.pow(direction[0], 2) + Math.pow(direction[1], 2)) != 1
+                    && Math.sqrt(Math.pow(direction[0], 2) + Math.pow(direction[1], 2)) != Math.sqrt(2)) {
                 return new Movement(false, direction);
             }
             // Cardinal direction movement.
@@ -194,43 +196,60 @@ public class MouseLocal {
                 return diagonalMovement;
             }
 
-            // System.err.println("Current cell: " + cell1.getX() + ", " + cell1.getY() + " direction move: " + direction[0] + ", " + direction[1] + " to cell: " + cell2.getX() + ", " + cell2.getY());
+            // System.err.println("Current cell: " + cell1.getX() + ", " + cell1.getY() + "
+            // direction move: " + direction[0] + ", " + direction[1] + " to cell: " +
+            // cell2.getX() + ", " + cell2.getY());
 
-            // If part of the eight cardinal directions, but not the four cardinal directions, check the following:
+            // If part of the eight cardinal directions, but not the four cardinal
+            // directions, check the following:
             boolean diagonalVertical = false;
             boolean diagonalHorizontal = false;
-            // E.g. direction is (-1, -1) --> check new cell's north and east walls as well as current cell's south and west walls.
-            // In this example, if either the new cell's north + current cell's west (upper diagonal) don't exist OR the new cell's east + current cell's south (lower diagonal) don't exist, the mouse can move diagonally.
-            int[] horizontalDirectionCheck = new int[] {direction[0], 0}; // E.g. -1 0
-            int[] verticalDirectionCheck = new int[] {0, direction[1]}; // E.g. 0 -1
+            // E.g. direction is (-1, -1) --> check new cell's north and east walls as well
+            // as current cell's south and west walls.
+            // In this example, if either the new cell's north + current cell's west (upper
+            // diagonal) don't exist OR the new cell's east + current cell's south (lower
+            // diagonal) don't exist, the mouse can move diagonally.
+            int[] horizontalDirectionCheck = new int[] { direction[0], 0 }; // E.g. -1 0
+            int[] verticalDirectionCheck = new int[] { 0, direction[1] }; // E.g. 0 -1
 
             // System.err.println("Direction: " + direction[0] + ", " + direction[1]);
 
-            diagonalHorizontal = (!cell1.getWallExists(horizontalDirectionCheck) && !cell2.getWallExists(new int[] {0, -verticalDirectionCheck[1]}));
-            diagonalVertical = (!cell1.getWallExists(verticalDirectionCheck) && !cell2.getWallExists(new int[] {-horizontalDirectionCheck[0], 0}));
+            // Determine if the diagonal is left or right
+            diagonalHorizontal = (!cell1.getWallExists(horizontalDirectionCheck)
+                    && !cell2.getWallExists(new int[] { 0, -verticalDirectionCheck[1] }));
+            diagonalVertical = (!cell1.getWallExists(verticalDirectionCheck)
+                    && !cell2.getWallExists(new int[] { -horizontalDirectionCheck[0], 0 }));
 
             diagonalMovement.setCanMove(diagonalHorizontal || diagonalVertical);
             if (!diagonalMovement.getCanMove()) {
                 return diagonalMovement;
             }
 
-            // Classifies if the horizontal diagonal is the left or right diagonal of the mouse.
-            boolean isHorizontalRight = (findDirectionIndexInPossibleDirections(verticalDirectionCheck) < findDirectionIndexInPossibleDirections(horizontalDirectionCheck));
+            // Classifies if the horizontal diagonal is the left or right diagonal of the
+            // mouse.
+            boolean isHorizontalRight = (findDirectionIndexInPossibleDirections(
+                    verticalDirectionCheck) < findDirectionIndexInPossibleDirections(horizontalDirectionCheck));
+            System.err.println(
+                    "Index of vertical direction: " + findDirectionIndexInPossibleDirections(verticalDirectionCheck)
+                            + " Index of horizontal direction: "
+                            + findDirectionIndexInPossibleDirections(horizontalDirectionCheck));
             boolean isVerticalRight = !isHorizontalRight;
 
+            System.err.println("[IMP]" + isHorizontalRight + " Horizontal: " + diagonalHorizontal + " Vertical: " + diagonalVertical);
             if (!isHorizontalRight && diagonalHorizontal) {
                 diagonalMovement.setIsDiagonal(true);
                 diagonalMovement.setLeftOrRightDiagonal("left");
-                diagonalMovement.setCellToMoveToFirst(getCell(cell1.getX() + horizontalDirectionCheck[0], cell1.getY()));
+                diagonalMovement
+                        .setCellToMoveToFirst(getCell(cell1.getX() + horizontalDirectionCheck[0], cell1.getY()));
             } else if (!isVerticalRight && diagonalVertical) {
                 diagonalMovement.setIsDiagonal(true);
                 diagonalMovement.setLeftOrRightDiagonal("left");
                 diagonalMovement.setCellToMoveToFirst(getCell(cell1.getX(), cell1.getY() + verticalDirectionCheck[1]));
-
             } else if (isHorizontalRight && diagonalHorizontal) {
                 diagonalMovement.setIsDiagonal(true);
                 diagonalMovement.setLeftOrRightDiagonal("right");
-                diagonalMovement.setCellToMoveToFirst(getCell(cell1.getX() + horizontalDirectionCheck[0], cell1.getY()));
+                diagonalMovement
+                        .setCellToMoveToFirst(getCell(cell1.getX() + horizontalDirectionCheck[0], cell1.getY()));
             } else if (isVerticalRight && diagonalVertical) {
                 diagonalMovement.setIsDiagonal(true);
                 diagonalMovement.setLeftOrRightDiagonal("right");
@@ -332,8 +351,9 @@ public class MouseLocal {
     }
 
     public void setMousePosition(Cell newMousePosition) {
-        mousePosition = new int[] {newMousePosition.getX(), newMousePosition.getY()};
+        mousePosition = new int[] { newMousePosition.getX(), newMousePosition.getY() };
     }
+
     /**
      * Returns a 2D representation of the maze as a string (formatted as a map).
      * 
@@ -408,7 +428,8 @@ public class MouseLocal {
             int newX = x + possibleDirections[i][0];
             int newY = y + possibleDirections[i][1];
 
-            if (isValidCell(newX, newY) && (diagonalsAllowed ? true : (possibleDirections[i][0] == 0 || possibleDirections[i][1] == 0))) {
+            if (isValidCell(newX, newY)
+                    && (diagonalsAllowed ? true : (possibleDirections[i][0] == 0 || possibleDirections[i][1] == 0))) {
                 Cell neighborCell = getCell(newX, newY);
                 neighbors.add(neighborCell);
             }
@@ -426,7 +447,7 @@ public class MouseLocal {
 
     public static double octileDistance(Cell cell1, Cell cell2) {
         int distanceX = Math.abs(cell1.getX() - cell2.getX());
-        int distanceY = Math.abs(cell1.getX() - cell2.getX());
+        int distanceY = Math.abs(cell1.getY() - cell2.getY());
         return (distanceX + distanceY) + (Math.sqrt(2) - 2) * Math.min(distanceX, distanceY);
     }
 
@@ -469,7 +490,6 @@ public class MouseLocal {
         return goalCells;
     }
 
-
     /**
      * Check if a cell is one of our four avoided goals.
      */
@@ -482,6 +502,6 @@ public class MouseLocal {
     }
 
     public static int[] getDirBetweenCells(Cell cell1, Cell cell2) {
-        return new int[] {cell2.getX() - cell1.getX(), cell2.getY() - cell1.getY()};
+        return new int[] { cell2.getX() - cell1.getX(), cell2.getY() - cell1.getY() };
     }
 }

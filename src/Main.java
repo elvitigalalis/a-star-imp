@@ -27,8 +27,12 @@ public class Main {
         ArrayList<Cell> startCell = new ArrayList<>(Arrays.asList(mouse.getMousePosition()));
         ArrayList<Cell> goalCells = mouse.getGoalCells();
 
+        // setUp(startCell.get(0), goalCells);
+        // frontierBased.explore(mouse, api, false);
+        // Thread.sleep(2000);
+
         setUp(startCell.get(0), goalCells);
-        frontierBased.explore(mouse, api, false);
+        traversePathIteratively(mouse, goalCells, false, true, false);
         Thread.sleep(2000);
 
         setUp(mouse.getMousePosition(), startCell);
@@ -38,7 +42,6 @@ public class Main {
         setUp(startCell.get(0), goalCells);
         traversePathIteratively(mouse, goalCells, true, true, false);
         Thread.sleep(2000);
-
 
         // api.moveForward();
         // api.turnRight();
@@ -94,8 +97,8 @@ public class Main {
         }
 
         if (Constants.MazeConstants.showGrid) {
-            for(int i = 0; i < Constants.MazeConstants.numCols; i++) {
-                for(int j = 0; j < Constants.MazeConstants.numRows; j++) {
+            for (int i = 0; i < Constants.MazeConstants.numCols; i++) {
+                for (int j = 0; j < Constants.MazeConstants.numRows; j++) {
                     api.setText(i, j, i + "," + j);
                 }
             }
@@ -110,13 +113,15 @@ public class Main {
         }
     }
 
-    public static boolean traversePathIteratively(MouseLocal mouse, Cell goalCell, boolean diagonalsAllowed, boolean allExplored, boolean avoidGoalCells) {
+    public static boolean traversePathIteratively(MouseLocal mouse, Cell goalCell, boolean diagonalsAllowed,
+            boolean allExplored, boolean avoidGoalCells) {
         ArrayList<Cell> goalCells = new ArrayList<>();
         goalCells.add(goalCell);
         return traversePathIteratively(mouse, goalCells, diagonalsAllowed, allExplored, avoidGoalCells);
     }
 
-    public static boolean traversePathIteratively(MouseLocal mouse, ArrayList<Cell> goalCells, boolean diagonalsAllowed, boolean allExplored, boolean avoidGoalCells) {
+    public static boolean traversePathIteratively(MouseLocal mouse, ArrayList<Cell> goalCells, boolean diagonalsAllowed,
+            boolean allExplored, boolean avoidGoalCells) {
         Cell currCell;
         Movement prevMov = null;
         if (allExplored) {
@@ -143,7 +148,8 @@ public class Main {
             // log("[PROCESSING] Making New Path...");
             List<Cell> cellPath = getBestAlgorithmPath(aStar, goalCells, diagonalsAllowed, avoidGoalCells);
 
-            if(Constants.MazeConstants.showPath && allExplored && !MouseLocal.isSame(goalCells.get(0), mouse.getCell(0, 0))) {
+            if (Constants.MazeConstants.showPath && allExplored
+                    && !MouseLocal.isSame(goalCells.get(0), mouse.getCell(0, 0))) {
                 for (Cell c : cellPath) {
                     api.setColor(c.getX(), c.getY(), Constants.MazeConstants.goalPathColor);
                 }
@@ -152,11 +158,12 @@ public class Main {
                     api.setColor(c.getX(), c.getY(), Constants.MazeConstants.returnPathColor);
                 }
             }
-            log("[PROCESSED] Algorithm Path: " + cellPath.stream().map(cell -> "(" + cell.getX() + ", " + cell.getY() + ")").collect(Collectors.joining(" -> ")));
+            log("[PROCESSED] Algorithm Path: " + cellPath.stream()
+                    .map(cell -> "(" + cell.getX() + ", " + cell.getY() + ")").collect(Collectors.joining(" -> ")));
             String path = AStar.pathToString(mouse, cellPath);
             // log("[PROCESSED] Path: " + path);
 
-            if(allExplored && diagonalsAllowed) {
+            if (allExplored && diagonalsAllowed) {
                 log("[PROCESSED] Path: " + path);
 
                 path = diagonalizeAndRun(currCell, path);
@@ -164,9 +171,9 @@ public class Main {
             } else {
                 for (String movement : path.split("#")) {
                     // log("[PROCESSING] Calculating Movement...");
-                    
+
                     // log("[DEBUG] Movement: " + movement);
-                    switch(movement) {
+                    switch (movement) {
                         case "F":
                             api.moveForward();
                             break;
@@ -182,7 +189,8 @@ public class Main {
                     }
 
                     currCell = mouse.getMousePosition();
-                    log("[POS] Updated Mouse Position: (" + mouse.getMousePosition().getX() + ", " + mouse.getMousePosition().getY() + ")\n");
+                    log("[POS] Updated Mouse Position: (" + mouse.getMousePosition().getX() + ", "
+                            + mouse.getMousePosition().getY() + ")\n");
                     // log("[POS] Is Explored: " + currCell.getIsExplored());
                     if (!currCell.getIsExplored()) {
                         log("[RE-CALC] Cell is unexplored, calculating new path.");
@@ -196,7 +204,8 @@ public class Main {
         return true;
     }
 
-    private static List<Cell> getBestAlgorithmPath(AStar aStar, ArrayList<Cell> goalCells, boolean diagonalsAllowed, boolean avoidGoalCells) {
+    private static List<Cell> getBestAlgorithmPath(AStar aStar, ArrayList<Cell> goalCells, boolean diagonalsAllowed,
+            boolean avoidGoalCells) {
         List<Cell> bestPath = null;
         double bestPathCost = Double.MAX_VALUE;
         for (Cell goalCell : goalCells) {
@@ -217,13 +226,15 @@ public class Main {
 
         for (i = 0; i < movements.length - 3; i++) {
             currCell = mouse.getMousePosition();
-            log ("[DEBUG] Mouse CurrPos: (" + currCell.getX() + ", " + currCell.getY() + ")");
+            log("[DEBUG] Mouse CurrPos: (" + currCell.getX() + ", " + currCell.getY() + ")");
             if (movements[i].equals("F") && movements.length - i > 4) {
                 i++;
                 String tempBlock = movements[i] + movements[i + 1] + movements[i + 2] + movements[i + 3];
-                if (tempBlock.equals("RFRF") || tempBlock.equals("LFLF") || tempBlock.equals("RFLF") || tempBlock.equals("LFRF")) {
+                if (tempBlock.equals("RFRF") || tempBlock.equals("LFLF") || tempBlock.equals("RFLF")
+                        || tempBlock.equals("LFRF")) {
                     log("[DEBUG] Temp Block: " + tempBlock);
-                    if (!lastMovement.equals("RFRF") && !lastMovement.equals("LFLF") && !lastMovement.equals("RFLF") && !lastMovement.equals("LFRF")) {
+                    if (!lastMovement.equals("RFRF") && !lastMovement.equals("LFLF") && !lastMovement.equals("RFLF")
+                            && !lastMovement.equals("LFRF")) {
                         api.moveForwardHalf();
                         newPath.append("FH#");
                         mouse.moveForwardLocal();
@@ -248,7 +259,7 @@ public class Main {
             log("[DEBUG] Movement Block: " + movementsBlock);
             log("[DEBUG] Last Movement: " + lastMovement);
 
-            switch(movementsBlock) {
+            switch (movementsBlock) {
                 case "RFLF":
                     if (lastMovement.equals(movementsBlock) || lastMovement.equals("LFLF")) {
                         newPath.append("F#");
@@ -273,7 +284,7 @@ public class Main {
                     lastMovement = movementsBlock;
                     break;
 
-                    // FINISHED
+                // FINISHED
                 case "LFRF":
                     if (lastMovement.equals(movementsBlock) || lastMovement.equals("RFRF")) {
                         newPath.append("F#");
@@ -298,9 +309,9 @@ public class Main {
                     lastMovement = movementsBlock;
                     break;
 
-                    // FINISHED
+                // FINISHED
                 case "RFRF":
-                    if (lastMovement.equals(movementsBlock)){
+                    if (lastMovement.equals(movementsBlock)) {
                         newPath.append("R#FH#R#FH#");
                         api.turnRight();
                         api.moveForwardHalf();
@@ -376,8 +387,8 @@ public class Main {
                     i += 3;
                     lastMovement = movementsBlock;
                     break;
-                    
-                default: 
+
+                default:
                     if (lastMovement.equals("RFLF") || lastMovement.equals("LFLF")) {
                         if ((movements[i] + movements[i + 1]).equals("RF")) {
                             log("POPPPPPY");
@@ -461,7 +472,7 @@ public class Main {
                     }
                     newPath.append(movements[i] + "#");
                     // log("[DEBUG] Movement: " + movements[i]);
-                    switch(movements[i]) {
+                    switch (movements[i]) {
                         case "F":
                             api.moveForward();
                             break;
@@ -489,12 +500,13 @@ public class Main {
             api.moveForwardHalf();
         }
         if (i < movements.length) {
-            log("Moves remaining: " + (movements.length - i) + " with moves being " + Arrays.toString(Arrays.copyOfRange(movements, i, movements.length)));
+            log("Moves remaining: " + (movements.length - i) + " with moves being "
+                    + Arrays.toString(Arrays.copyOfRange(movements, i, movements.length)));
             for (int j = i; j < movements.length; j++) {
                 log("[DEBUG] Movement: " + movements[j]);
                 currCell = mouse.getMousePosition();
-                log ("[DEBUG] Mouse CurrPos: (" + currCell.getX() + ", " + currCell.getY() + ")");
-                switch(movements[j]) {
+                log("[DEBUG] Mouse CurrPos: (" + currCell.getX() + ", " + currCell.getY() + ")");
+                switch (movements[j]) {
                     case "F":
                         api.moveForward();
                         break;
@@ -505,23 +517,24 @@ public class Main {
                         api.turnRight();
                         break;
                     default:
-                        log("[ERROR] Invalid Movement: " + movements[i]);
+                        log("[ERROR] Invalid Movement: " + movements[j]);
                         break;
                 }
             }
             currCell = mouse.getMousePosition();
-            log ("[DEBUG] Mouse CurrPos: (" + currCell.getX() + ", " + currCell.getY() + ")");
+            log("[DEBUG] Mouse CurrPos: (" + currCell.getX() + ", " + currCell.getY() + ")");
         } else {
             currCell = mouse.getMousePosition();
-            log ("[DEBUG] Mouse CurrPos: (" + currCell.getX() + ", " + currCell.getY() + ")");
+            log("[DEBUG] Mouse CurrPos: (" + currCell.getX() + ", " + currCell.getY() + ")");
         }
         return newPath.toString();
     }
 
     public static void turnMouseToNextCell(Cell currentCell, Cell nextCell) {
-        int[] directionNeeded = new int[] { nextCell.getX() - currentCell.getX(), nextCell.getY() - currentCell.getY() };
+        int[] directionNeeded = new int[] { nextCell.getX() - currentCell.getX(),
+                nextCell.getY() - currentCell.getY() };
         int[] halfStepsNeeded = mouse.obtainHalfStepCount(directionNeeded);
-       
+
         if (halfStepsNeeded[0] % 2 == 0) {
             for (int i = 0; i < halfStepsNeeded[0] / 2; i++) {
                 if (halfStepsNeeded[1] == 1) {
@@ -541,39 +554,43 @@ public class Main {
         }
     }
 
-    // public static void diagonalToDiagonalStep(Cell currCell, Cell nextCell, Movement prevMov, Movement currMov) {
-    //     turnMouseToNextCell(currCell, nextCell);
-    //     api.moveForward();
+    // public static void diagonalToDiagonalStep(Cell currCell, Cell nextCell,
+    // Movement prevMov, Movement currMov) {
+    // turnMouseToNextCell(currCell, nextCell);
+    // api.moveForward();
 
-    //     //FIxme
-    //     // FINISHED
+    // //FIxme
+    // // FINISHED
     // }
 
-    // public static void diagonalToCardinalStep(Cell currCell, Cell nextCell, Movement prevMov, Movement currMov) {
-    //     turnMouseToNextCell(prevMov.getFirstMove(), currCell);
-    //     api.moveForwardHalf();
-    //     turnMouseToNextCell(currCell, nextCell);
-    //     api.moveForward();
+    // public static void diagonalToCardinalStep(Cell currCell, Cell nextCell,
+    // Movement prevMov, Movement currMov) {
+    // turnMouseToNextCell(prevMov.getFirstMove(), currCell);
+    // api.moveForwardHalf();
+    // turnMouseToNextCell(currCell, nextCell);
+    // api.moveForward();
 
-    //     // FINISHED
+    // // FINISHED
     // }
 
-    // public static void cardinalToDiagonalStep(Cell currCell, Cell nextCell, Movement prevMov, Movement currMov) {
-    //     turnMouseToNextCell(currCell, currMov.getFirstMove());
-    //     api.moveForwardHalf();
-    //     // mouse.moveForwardLocal();
-    //     turnMouseToNextCell(currCell, nextCell);
-    //     api.moveForwardHalf();
-    //     mouse.moveForwardLocal();
+    // public static void cardinalToDiagonalStep(Cell currCell, Cell nextCell,
+    // Movement prevMov, Movement currMov) {
+    // turnMouseToNextCell(currCell, currMov.getFirstMove());
+    // api.moveForwardHalf();
+    // // mouse.moveForwardLocal();
+    // turnMouseToNextCell(currCell, nextCell);
+    // api.moveForwardHalf();
+    // mouse.moveForwardLocal();
 
-    //     // FINISHED, FIXME
+    // // FINISHED, FIXME
     // }
 
-    // public static void cardinalToCardinalStep(Cell currCell, Cell nextCell, Movement prevMov, Movement currMov) {
-    //     turnMouseToNextCell(currCell, nextCell);
-    //     api.moveForward();
+    // public static void cardinalToCardinalStep(Cell currCell, Cell nextCell,
+    // Movement prevMov, Movement currMov) {
+    // turnMouseToNextCell(currCell, nextCell);
+    // api.moveForward();
 
-    //     // FINISHED
+    // // FINISHED
     // }
 
     public static void setAllExplored(MouseLocal mouse) {
