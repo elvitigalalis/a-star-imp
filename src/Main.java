@@ -27,12 +27,8 @@ public class Main {
         ArrayList<Cell> startCell = new ArrayList<>(Arrays.asList(mouse.getMousePosition()));
         ArrayList<Cell> goalCells = mouse.getGoalCells();
 
-        // setUp(startCell.get(0), goalCells);
-        // frontierBased.explore(mouse, api, false);
-        // Thread.sleep(2000);
-
         setUp(startCell.get(0), goalCells);
-        traversePathIteratively(mouse, goalCells, false, true, false);
+        frontierBased.explore(mouse, api, false);
         Thread.sleep(2000);
 
         setUp(mouse.getMousePosition(), startCell);
