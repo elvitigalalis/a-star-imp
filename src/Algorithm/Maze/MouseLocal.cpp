@@ -1,6 +1,6 @@
 #include "MouseLocal.h"
 
-#define MAZE Constants::MazeConstants
+#define MAZE  Constants::MazeConstants
 #define MOUSE Constants::MouseConstants
 
 MouseLocal::MouseLocal()
@@ -23,10 +23,7 @@ MouseLocal::MouseLocal()
     setUpMazeLocal();
 }
 
-MouseLocal::~MouseLocal()
-{
-    deleteMazeLocal();
-}
+MouseLocal::~MouseLocal() { deleteMazeLocal(); }
 
 /**
  * Function to set up the maze with cells marked by their x, y coordinates.
@@ -39,40 +36,33 @@ MouseLocal::~MouseLocal()
  */
 void MouseLocal::setUpMazeLocal()
 {
-    for (int i = 0; i < Constants::MazeConstants::numCols; ++i)
-    { // X-direction
-        for (int j = 0; j < Constants::MazeConstants::numRows; ++j)
-        {                                     // Y-direction
-            mazeCells[j][i] = new Cell(i, j); // Assuming mazeCells[row][col], row=j, col=i
-        }
+    for (int i = 0; i < Constants::MazeConstants::numCols; ++i) { // X-direction
+	for (int j = 0; j < Constants::MazeConstants::numRows; ++j) { // Y-direction
+	    mazeCells[j][i] = new Cell(i, j); // Assuming mazeCells[row][col], row=j, col=i
+	}
     }
 }
 
 void MouseLocal::deleteMazeLocal()
 {
-    for (int i = 0; i < Constants::MazeConstants::numCols; ++i)
-    { // X-direction
-        for (int j = 0; j < Constants::MazeConstants::numRows; ++j)
-        { // Y-direction
-            delete mazeCells[j][i];
-        }
+    for (int i = 0; i < Constants::MazeConstants::numCols; ++i) { // X-direction
+	for (int j = 0; j < Constants::MazeConstants::numRows; ++j) { // Y-direction
+	    delete mazeCells[j][i];
+	}
     }
-} 
+}
 
 void MouseLocal::turnMouseLocal(int halfStepsLeft, int halfStepsRight)
 {
-    try
-    {
-        const int numPossibleDirections = Constants::MouseConstants::possibleMouseDirections.size();
-        const auto &possibleMouseDirections = Constants::MouseConstants::possibleMouseDirections;
+    try {
+	const int numPossibleDirections = Constants::MouseConstants::possibleMouseDirections.size();
+	const auto &possibleMouseDirections = Constants::MouseConstants::possibleMouseDirections;
 
-        int currentIndex = findDirectionIndexInPossibleDirections(mouseDirection);
-        int newIndex = (currentIndex + halfStepsRight - halfStepsLeft + numPossibleDirections) % numPossibleDirections;
-        mouseDirection = possibleMouseDirections[newIndex];
-    }
-    catch (const std::invalid_argument &e)
-    {
-        cerr << e.what() << std::endl;
+	int currentIndex = findDirectionIndexInPossibleDirections(mouseDirection);
+	int newIndex = (currentIndex + halfStepsRight - halfStepsLeft + numPossibleDirections) % numPossibleDirections;
+	mouseDirection = possibleMouseDirections[newIndex];
+    } catch (const std::invalid_argument &e) {
+	cerr << e.what() << std::endl;
     }
 }
 
@@ -108,12 +98,10 @@ array<int, 2> MouseLocal::obtainHalfStepCount(const array<int, 2> &newDirection)
 int MouseLocal::findDirectionIndexInPossibleDirections(const array<int, 2> &direction) const
 {
     const auto &possibleMouseDirections = Constants::MouseConstants::possibleMouseDirections;
-    for (size_t i = 0; i < possibleMouseDirections.size(); i++)
-    {
-        if (possibleMouseDirections[i][0] == direction[0] && possibleMouseDirections[i][1] == direction[1])
-        {
-            return i;
-        }
+    for (size_t i = 0; i < possibleMouseDirections.size(); i++) {
+	if (possibleMouseDirections[i][0] == direction[0] && possibleMouseDirections[i][1] == direction[1]) {
+	    return i;
+	}
     }
     throw std::invalid_argument("Direction not listed as a possible mouse direction.");
 }
@@ -124,13 +112,11 @@ void MouseLocal::moveForwardLocal()
     int newXPosition = mousePosition[0] + mouseDirection[0];
     int newYPosition = mousePosition[1] + mouseDirection[1];
 
-    if (isValidCell(newXPosition, newYPosition))
-    {
-        mousePosition = {newXPosition, newYPosition};
-    }
-    else
-    {
-        cerr << "Invalid position (ack), mouse cannot move to (" << newXPosition << "," << newYPosition << ")" << std::endl;
+    if (isValidCell(newXPosition, newYPosition)) {
+	mousePosition = {newXPosition, newYPosition};
+    } else {
+	cerr << "Invalid position (ack), mouse cannot move to (" << newXPosition << "," << newYPosition << ")"
+	     << std::endl;
     }
 }
 
@@ -140,16 +126,13 @@ void MouseLocal::addWallLocal(int x, int y, const array<int, 2> &direction)
     int neighboringCellX = x + direction[0];
     int neighboringCellY = y + direction[1];
 
-    if (isValidCell(neighboringCellX, neighboringCellY))
-    {
-        mazeCells[y][x]->addWall(direction, true);
-        mazeCells[neighboringCellY][neighboringCellX]->addWall({-direction[0], -direction[1]}, true);
-        // cerr << "Shared wall cell found :)" << std::endl;
-    }
-    else
-    {
-        mazeCells[y][x]->addWall(direction, false);
-        // cerr << "Edge cell found :)" << std::endl; // FIXME: Remove later.
+    if (isValidCell(neighboringCellX, neighboringCellY)) {
+	mazeCells[y][x]->addWall(direction, true);
+	mazeCells[neighboringCellY][neighboringCellX]->addWall({-direction[0], -direction[1]}, true);
+	// cerr << "Shared wall cell found :)" << std::endl;
+    } else {
+	mazeCells[y][x]->addWall(direction, false);
+	// cerr << "Edge cell found :)" << std::endl; // FIXME: Remove later.
     }
 }
 
@@ -163,90 +146,84 @@ bool MouseLocal::isValidCell(int x, int y) const
 Movement MouseLocal::getMovement(const Cell &cell1, const Cell &cell2, bool diagonalsAllowed)
 {
     array<int, 2> direction = {cell2.getX() - cell1.getX(), cell2.getY() - cell1.getY()};
-    try
-    {
-        double distance = std::sqrt(std::pow(direction[0], 2) + std::pow(direction[1], 2));
-        if (distance != 1 && distance != std::sqrt(2))
-        {
-            return Movement(false, direction);
-        }
+    try {
+	double distance = std::sqrt(std::pow(direction[0], 2) + std::pow(direction[1], 2));
+	if (distance != 1 && distance != std::sqrt(2)) {
+	    return Movement(false, direction);
+	}
 
-        // Cardinal direction movement
-        bool canMove = !cell1.getWallExists(direction);
-        Movement cardinalMovement(canMove, direction);
+	// Cardinal direction movement
+	bool canMove = !cell1.getWallExists(direction);
+	Movement cardinalMovement(canMove, direction);
 
-        return cardinalMovement;
-    }
-    catch (const std::invalid_argument &e)
-    {
-        Movement diagonalMovement(false, direction);
-        if (!diagonalsAllowed || !cell2.getIsExplored())
-        {
-            return diagonalMovement;
-        }
-        // LOG_DEBUG("Current cell:" + std::to_string(cell1.getX()) + ", " + std::to_string(cell1.getY()));
+	return cardinalMovement;
+    } catch (const std::invalid_argument &e) {
+	Movement diagonalMovement(false, direction);
+	if (!diagonalsAllowed || !cell2.getIsExplored()) {
+	    return diagonalMovement;
+	}
+	// LOG_DEBUG("Current cell:" + std::to_string(cell1.getX()) + ", " + std::to_string(cell1.getY()));
 
-        // If part of the eight cardinal directions, but not the four cardinal directions, check the following:
-        bool diagonalVertical = false;
-        bool diagonalHorizontal = false;
-        // E.g. direction is (-1, -1) --> check new cell's north and east walls as well as current cell's south and west walls.
-        // In this example, if either the new cell's north + current cell's west (upper diagonal) don't exist OR the new cell's east + current cell's south (lower diagonal) don't exist, the mouse can move diagonally.
-        array<int, 2> horizontalDirectionCheck = {direction[0], 0};
-        array<int, 2> verticalDirectionCheck = {0, direction[1]};
+	// If part of the eight cardinal directions, but not the four cardinal directions, check the following:
+	bool diagonalVertical = false;
+	bool diagonalHorizontal = false;
+	// E.g. direction is (-1, -1) --> check new cell's north and east walls as well as current cell's south and west
+	// walls. In this example, if either the new cell's north + current cell's west (upper diagonal) don't exist OR
+	// the new cell's east + current cell's south (lower diagonal) don't exist, the mouse can move diagonally.
+	array<int, 2> horizontalDirectionCheck = {direction[0], 0};
+	array<int, 2> verticalDirectionCheck = {0, direction[1]};
 
-        // LOG_DEBUG("Direction" + std::to_string(direction[0]) + ", " + std::to_string(direction[1]));
+	// LOG_DEBUG("Direction" + std::to_string(direction[0]) + ", " + std::to_string(direction[1]));
 
-        // Determine if the diagonal is left or right
-        diagonalHorizontal = (!cell1.getWallExists(horizontalDirectionCheck) && !cell2.getWallExists({0, -verticalDirectionCheck[1]}));
-        // LOG_DEBUG("Diagonal horizontal: " + std::to_string(diagonalHorizontal));
-        diagonalVertical = (!cell1.getWallExists(verticalDirectionCheck) && !cell2.getWallExists({-horizontalDirectionCheck[0], 0}));
-        // LOG_DEBUG("Diagonal vertical: " + std::to_string(diagonalVertical));
+	// Determine if the diagonal is left or right
+	diagonalHorizontal =
+	    (!cell1.getWallExists(horizontalDirectionCheck) && !cell2.getWallExists({0, -verticalDirectionCheck[1]}));
+	// LOG_DEBUG("Diagonal horizontal: " + std::to_string(diagonalHorizontal));
+	diagonalVertical =
+	    (!cell1.getWallExists(verticalDirectionCheck) && !cell2.getWallExists({-horizontalDirectionCheck[0], 0}));
+	// LOG_DEBUG("Diagonal vertical: " + std::to_string(diagonalVertical));
 
-        diagonalMovement.setCanMove(diagonalHorizontal || diagonalVertical);
-        if (!diagonalMovement.getCanMove())
-        {
-            return diagonalMovement;
-        }
+	diagonalMovement.setCanMove(diagonalHorizontal || diagonalVertical);
+	if (!diagonalMovement.getCanMove()) {
+	    return diagonalMovement;
+	}
 
-        // Classifies if the horizontal diagonal is the left or right diagonal of the mouse.
-        bool isHorizontalRight = (findDirectionIndexInPossibleDirections(verticalDirectionCheck) < findDirectionIndexInPossibleDirections(horizontalDirectionCheck));
-        LOG_DEBUG("Index of vertical direction: " + std::to_string(findDirectionIndexInPossibleDirections(verticalDirectionCheck)) + ", Index of horizontal direction: " + std::to_string(findDirectionIndexInPossibleDirections(horizontalDirectionCheck)));
-        LOG_DEBUG("Is horizontal right: " + std::to_string(isHorizontalRight));
-        bool isVerticalRight = !isHorizontalRight;
+	// Classifies if the horizontal diagonal is the left or right diagonal of the mouse.
+	bool isHorizontalRight =
+	    (findDirectionIndexInPossibleDirections(verticalDirectionCheck) <
+	     findDirectionIndexInPossibleDirections(horizontalDirectionCheck));
+	LOG_DEBUG(
+	    "Index of vertical direction: " +
+	    std::to_string(findDirectionIndexInPossibleDirections(verticalDirectionCheck)) +
+	    ", Index of horizontal direction: " +
+	    std::to_string(findDirectionIndexInPossibleDirections(horizontalDirectionCheck)));
+	LOG_DEBUG("Is horizontal right: " + std::to_string(isHorizontalRight));
+	bool isVerticalRight = !isHorizontalRight;
 
-        if (!isHorizontalRight && diagonalHorizontal)
-        {
-            diagonalMovement.setIsDiagonal(true);
-            diagonalMovement.setLeftOrRightDiagonal("left");
-            diagonalMovement.setCellToMoveToFirst(&getCell(cell1.getX() + horizontalDirectionCheck[0], cell1.getY()));
-            LOG_DEBUG("Diagonal movement to the left 1");
-        }
-        else if (!isVerticalRight && diagonalVertical)
-        {
-            diagonalMovement.setIsDiagonal(true);
-            diagonalMovement.setLeftOrRightDiagonal("left");
-            diagonalMovement.setCellToMoveToFirst(&getCell(cell1.getX(), cell1.getY() + verticalDirectionCheck[1]));
-            LOG_DEBUG("Diagonal movement to the left 2");
-        }
-        else if (isHorizontalRight && diagonalHorizontal)
-        {
-            diagonalMovement.setIsDiagonal(true);
-            diagonalMovement.setLeftOrRightDiagonal("right");
-            diagonalMovement.setCellToMoveToFirst(&getCell(cell1.getX() + horizontalDirectionCheck[0], cell1.getY()));
-            LOG_DEBUG("Diagonal movement to the right 1");
-        }
-        else if (isVerticalRight && diagonalVertical)
-        {
-            diagonalMovement.setIsDiagonal(true);
-            diagonalMovement.setLeftOrRightDiagonal("right");
-            diagonalMovement.setCellToMoveToFirst(&getCell(cell1.getX(), cell1.getY() + verticalDirectionCheck[1]));
-            LOG_DEBUG("Diagonal movement to the right 2");
-        }
-        else
-        {
-            diagonalMovement.setCanMove(false);
-        }
-        return diagonalMovement;
+	if (!isHorizontalRight && diagonalHorizontal) {
+	    diagonalMovement.setIsDiagonal(true);
+	    diagonalMovement.setLeftOrRightDiagonal("left");
+	    diagonalMovement.setCellToMoveToFirst(&getCell(cell1.getX() + horizontalDirectionCheck[0], cell1.getY()));
+	    LOG_DEBUG("Diagonal movement to the left 1");
+	} else if (!isVerticalRight && diagonalVertical) {
+	    diagonalMovement.setIsDiagonal(true);
+	    diagonalMovement.setLeftOrRightDiagonal("left");
+	    diagonalMovement.setCellToMoveToFirst(&getCell(cell1.getX(), cell1.getY() + verticalDirectionCheck[1]));
+	    LOG_DEBUG("Diagonal movement to the left 2");
+	} else if (isHorizontalRight && diagonalHorizontal) {
+	    diagonalMovement.setIsDiagonal(true);
+	    diagonalMovement.setLeftOrRightDiagonal("right");
+	    diagonalMovement.setCellToMoveToFirst(&getCell(cell1.getX() + horizontalDirectionCheck[0], cell1.getY()));
+	    LOG_DEBUG("Diagonal movement to the right 1");
+	} else if (isVerticalRight && diagonalVertical) {
+	    diagonalMovement.setIsDiagonal(true);
+	    diagonalMovement.setLeftOrRightDiagonal("right");
+	    diagonalMovement.setCellToMoveToFirst(&getCell(cell1.getX(), cell1.getY() + verticalDirectionCheck[1]));
+	    LOG_DEBUG("Diagonal movement to the right 2");
+	} else {
+	    diagonalMovement.setCanMove(false);
+	}
+	return diagonalMovement;
     }
 }
 
@@ -256,14 +233,11 @@ array<int, 2> MouseLocal::getDirectionOffset(const string &direction) const
     const vector<array<int, 2>> &possibleMouseDirections = Constants::MouseConstants::possibleMouseDirections;
     vector<string> possibleDirections = {"n", "ne", "e", "se", "s", "sw", "w", "nw"};
     auto it = std::find(possibleDirections.begin(), possibleDirections.end(), direction);
-    if (it != possibleDirections.end())
-    {
-        size_t index = std::distance(possibleDirections.begin(), it);
-        return possibleMouseDirections[index];
-    }
-    else
-    {
-        throw std::invalid_argument("Invalid direction string: " + direction);
+    if (it != possibleDirections.end()) {
+	size_t index = std::distance(possibleDirections.begin(), it);
+	return possibleMouseDirections[index];
+    } else {
+	throw std::invalid_argument("Invalid direction string: " + direction);
     }
 }
 
@@ -272,12 +246,10 @@ string MouseLocal::getDirectionAsString(const array<int, 2> &direction) const
 {
     const vector<string> possibleDirections = {"n", "ne", "e", "se", "s", "sw", "w", "nw"};
     const vector<array<int, 2>> &possibleMouseDirections = Constants::MouseConstants::possibleMouseDirections;
-    for (size_t i = 0; i < possibleMouseDirections.size(); ++i)
-    {
-        if (possibleMouseDirections[i][0] == direction[0] && possibleMouseDirections[i][1] == direction[1])
-        {
-            return possibleDirections[i];
-        }
+    for (size_t i = 0; i < possibleMouseDirections.size(); ++i) {
+	if (possibleMouseDirections[i][0] == direction[0] && possibleMouseDirections[i][1] == direction[1]) {
+	    return possibleDirections[i];
+	}
     }
     throw std::invalid_argument("Invalid direction offset.");
 }
@@ -303,47 +275,33 @@ string MouseLocal::getDirectionToTheRight() const
 }
 
 // Returns mouse direction
-array<int, 2> MouseLocal::getMouseDirection() const
-{
-    return mouseDirection;
-}
+array<int, 2> MouseLocal::getMouseDirection() const { return mouseDirection; }
 
 // Sets mouse direction
-void MouseLocal::setMouseDirection(const array<int, 2> &newDirection)
-{
-    mouseDirection = newDirection;
-}
+void MouseLocal::setMouseDirection(const array<int, 2> &newDirection) { mouseDirection = newDirection; }
 
 // Returns the maze cells
-const vector<vector<Cell *>> &MouseLocal::getMazeCells() const
-{
-    return mazeCells;
-}
+const vector<vector<Cell *>> &MouseLocal::getMazeCells() const { return mazeCells; }
 
 // Returns a particular cell
 Cell &MouseLocal::getCell(int x, int y)
 {
-    if (!isValidCell(x, y))
-    {
-        throw std::out_of_range("Invalid cell coordinates.");
+    if (!isValidCell(x, y)) {
+	throw std::out_of_range("Invalid cell coordinates.");
     }
     return *mazeCells[y][x];
 }
 
 Cell &MouseLocal::getCell(int x, int y) const
 {
-    if (!isValidCell(x, y))
-    {
-        throw std::out_of_range("Invalid cell coordinates.");
+    if (!isValidCell(x, y)) {
+	throw std::out_of_range("Invalid cell coordinates.");
     }
     return *mazeCells[y][x];
 }
 
 // Returns mouse's current position cell
-Cell &MouseLocal::getMousePosition()
-{
-    return getCell(mousePosition[0], mousePosition[1]);
-}
+Cell &MouseLocal::getMousePosition() { return getCell(mousePosition[0], mousePosition[1]); }
 
 // Sets mouse's position
 void MouseLocal::setMousePosition(const Cell &newMousePosition)
@@ -360,16 +318,14 @@ string MouseLocal::localMazeToString() const
     int numCols = Constants::MazeConstants::numCols;
 
     // Print top boundary
-    for (int i = 0; i < numCols; ++i)
-    {
-        mazeString << "+---";
+    for (int i = 0; i < numCols; ++i) {
+	mazeString << "+---";
     }
     mazeString << "+\n";
 
-    for (int i = numRows - 1; i >= 0; --i)
-    {
-        mazeString << printRow(i);
-        mazeString << "\n";
+    for (int i = numRows - 1; i >= 0; --i) {
+	mazeString << printRow(i);
+	mazeString << "\n";
     }
 
     return mazeString.str();
@@ -383,31 +339,23 @@ string MouseLocal::printRow(int rowNumber) const
 
     int numCols = Constants::MazeConstants::numCols;
 
-    for (int i = 0; i < numCols; ++i)
-    {
-        const Cell &cellAnalyzed = getCell(i, rowNumber);
-        if (cellAnalyzed.getWallExists({1, 0}))
-        {
-            rowString << "   |";
-        }
-        else
-        {
-            rowString << "    ";
-        }
+    for (int i = 0; i < numCols; ++i) {
+	const Cell &cellAnalyzed = getCell(i, rowNumber);
+	if (cellAnalyzed.getWallExists({1, 0})) {
+	    rowString << "   |";
+	} else {
+	    rowString << "    ";
+	}
     }
     rowString << "\n";
 
-    for (int i = 0; i < numCols; ++i)
-    {
-        const Cell &cellAnalyzed = getCell(i, rowNumber);
-        if (cellAnalyzed.getWallExists({0, -1}))
-        {
-            rowString << "+---";
-        }
-        else
-        {
-            rowString << "+   ";
-        }
+    for (int i = 0; i < numCols; ++i) {
+	const Cell &cellAnalyzed = getCell(i, rowNumber);
+	if (cellAnalyzed.getWallExists({0, -1})) {
+	    rowString << "+---";
+	} else {
+	    rowString << "+   ";
+	}
     }
     rowString << "+\n";
 
@@ -423,17 +371,14 @@ vector<Cell *> MouseLocal::getNeighbors(const Cell &cell, bool diagonalsAllowed)
 
     const vector<array<int, 2>> &possibleDirections = Constants::MouseConstants::possibleMouseDirections;
 
-    for (const auto &direction : possibleDirections)
-    {
-        int newX = x + direction[0];
-        int newY = y + direction[1];
-        if (isValidCell(newX, newY))
-        {
-            if (diagonalsAllowed || direction[0] == 0 || direction[1] == 0)
-            {
-                neighbors.emplace_back(&getCell(newX, newY));
-            }
-        }
+    for (const auto &direction : possibleDirections) {
+	int newX = x + direction[0];
+	int newY = y + direction[1];
+	if (isValidCell(newX, newY)) {
+	    if (diagonalsAllowed || direction[0] == 0 || direction[1] == 0) {
+		neighbors.emplace_back(&getCell(newX, newY));
+	    }
+	}
     }
     return neighbors;
 }
@@ -461,14 +406,12 @@ double MouseLocal::octileDistance(const Cell &cell1, const Cell &cell2)
 // Resets costs of all cells
 void MouseLocal::resetCosts()
 {
-    for (int x = 0; x < Constants::MazeConstants::numCols; ++x)
-    {
-        for (int y = 0; y < Constants::MazeConstants::numRows; ++y)
-        {
-            Cell &cell = getCell(x, y);
-            cell.setCostFromStart(std::numeric_limits<double>::infinity());
-            cell.setTotalCost(std::numeric_limits<double>::infinity());
-        }
+    for (int x = 0; x < Constants::MazeConstants::numCols; ++x) {
+	for (int y = 0; y < Constants::MazeConstants::numRows; ++y) {
+	    Cell &cell = getCell(x, y);
+	    cell.setCostFromStart(std::numeric_limits<double>::infinity());
+	    cell.setTotalCost(std::numeric_limits<double>::infinity());
+	}
     }
 }
 
@@ -476,17 +419,14 @@ void MouseLocal::resetCosts()
 void MouseLocal::detectAndSetWalls(API &api)
 {
     Cell &currCell = getMousePosition();
-    if (api.wallFront())
-    {
-        api.setWall(currCell.getX(), currCell.getY(), getDirectionAsString(getMouseDirection()));
+    if (api.wallFront()) {
+	api.setWall(currCell.getX(), currCell.getY(), getDirectionAsString(getMouseDirection()));
     }
-    if (api.wallLeft())
-    {
-        api.setWall(currCell.getX(), currCell.getY(), getDirectionToTheLeft());
+    if (api.wallLeft()) {
+	api.setWall(currCell.getX(), currCell.getY(), getDirectionToTheLeft());
     }
-    if (api.wallRight())
-    {
-        api.setWall(currCell.getX(), currCell.getY(), getDirectionToTheRight());
+    if (api.wallRight()) {
+	api.setWall(currCell.getX(), currCell.getY(), getDirectionToTheRight());
     }
 }
 
@@ -495,9 +435,8 @@ vector<Cell *> MouseLocal::getGoalCells() const
 {
     vector<array<int, 2>> goalPoses = Constants::MazeConstants::getGoalCells();
     vector<Cell *> goalCells;
-    for (const auto &goalPos : goalPoses)
-    {
-        goalCells.emplace_back(&getCell(goalPos[0], goalPos[1]));
+    for (const auto &goalPos : goalPoses) {
+	goalCells.emplace_back(&getCell(goalPos[0], goalPos[1]));
     }
     return goalCells;
 }
@@ -506,9 +445,8 @@ vector<Cell *> MouseLocal::getGoalCells() const
 bool MouseLocal::isGoalCell(const Cell &cell, const vector<Cell *> &goalCells) const
 {
     bool isGoal = false;
-    for (const auto &goal : goalCells)
-    {
-        isGoal = isGoal || isSame(cell, *goal);
+    for (const auto &goal : goalCells) {
+	isGoal = isGoal || isSame(cell, *goal);
     }
     return isGoal;
 }

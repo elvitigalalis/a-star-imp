@@ -1,13 +1,13 @@
 #ifndef MAIN_H
 #define MAIN_H
 
-#include <iostream>
-#include <string>
-#include <vector>
-#include <thread>
-#include <chrono>
-#include <sstream>
 #include <algorithm>
+#include <chrono>
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <thread>
+#include <vector>
 
 #include "API/API.h"
 #include "Algorithm/AStar.h"
@@ -18,57 +18,25 @@
 
 using std::vector;
 
-// Forward declarations of classes
 class Cell;
 class MouseLocal;
 class API;
 class AStar;
 class FrontierBased;
 
-// Global variable declarations (defined in Main.cpp)
 extern MouseLocal* mousePtr;
 extern API* apiPtr;
 extern AStar* aStarPtr;
 extern FrontierBased* frontierBasedPtr;
 
-// Function prototypes
+void setUp(const vector<Cell*>& goalCells);
+void setUp(const vector<Cell*>& startCell, const vector<Cell*>& goalCells);
 
-/**
- * @brief Logs messages to the standard error stream.
- * 
- * @param text The message to log.
- */
-void log(const string& text);
+void sleepFor(int milliseconds);
 
-/**
- * @brief Sets up the maze walls, grid text/colors, etc.
- * 
- * @param startCell The starting Cell of the mouse.
- * @param goalCells A vector of goal Cells.
- */
-void setUp(const Cell& startCell, const vector<Cell*>& goalCells);
-
-/**
- * @brief Marks all cells in the maze as explored.
- * 
- * @param mouse Pointer to the MouseLocal instance.
- */
 void setAllExplored(MouseLocal* mouse);
 
-/**
- * @brief Determines the best path among multiple goals using the A* algorithm.
- * 
- * @param aStar Pointer to the AStar instance.
- * @param goalCells A vector of goal Cells.
- * @param diagonalsAllowed Whether diagonal movements are permitted.
- * @param avoidGoalCells Whether to avoid goal cells during pathfinding.
- * @return vector<Cell*> The best path as a vector of Cells.
- */
- //..
-vector<Cell*> getBestAlgorithmPath(AStar* aStar, 
-                                      vector<Cell*>& goalCells, 
-                                      bool diagonalsAllowed,
-                                      bool avoidGoalCells);
+vector<Cell*> getBestAlgorithmPath(AStar* aStar, vector<Cell*>& goalCells, bool diagonalsAllowed, bool avoidGoalCells);
 
 /**
  * @brief Turns the mouse from its current cell to face the next cell.
@@ -98,11 +66,8 @@ string diagonalizeAndRun(Cell& currCell, const string& path);
  * @return true If traversal was successful.
  * @return false If traversal failed.
  */
-bool traversePathIteratively(MouseLocal* mouse, 
-                             Cell& goalCell, 
-                             bool diagonalsAllowed,
-                             bool allExplored, 
-                             bool avoidGoalCells);
+bool traversePathIteratively(MouseLocal* mouse, Cell& goalCell, bool diagonalsAllowed, bool allExplored,
+							 bool avoidGoalCells);
 
 /**
  * @brief Traverses multiple goal cells iteratively.
@@ -115,10 +80,7 @@ bool traversePathIteratively(MouseLocal* mouse,
  * @return true If traversal was successful for all goals.
  * @return false If traversal failed for any goal.
  */
-bool traversePathIteratively(MouseLocal* mouse, 
-                             vector<Cell*>& goalCells, 
-                             bool diagonalsAllowed,
-                             bool allExplored, 
-                             bool avoidGoalCells);
+bool traversePathIteratively(MouseLocal* mouse, vector<Cell*>& goalCells, bool diagonalsAllowed, bool allExplored,
+							 bool avoidGoalCells);
 
-#endif // MAIN_H
+#endif	// MAIN_H
