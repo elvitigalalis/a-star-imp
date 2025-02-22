@@ -63,7 +63,7 @@ void setUp(const vector<Cell*>& startCells, const vector<Cell*>& goalCells) {
 		}
 	}
 
-	LOG_INFO("Running" + Constants::MouseConstants::mouseName + "...\n");
+	LOG_INFO("Running " + Constants::MouseConstants::mouseName + "...\n");
 
 	// Adds color/text to start and goal cells.
 	for (const auto& startCell : startCells) {
