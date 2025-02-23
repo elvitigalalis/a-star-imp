@@ -8,6 +8,7 @@
 #include <string>
 #include <thread>
 #include <vector>
+#include <unordered_map>
 
 #include "API/API.h"
 #include "Algorithm/AStar.h"
@@ -17,6 +18,7 @@
 #include "Algorithm/Maze/Movement.h"
 
 using std::vector;
+using std::unordered_map;
 
 class Cell;
 class MouseLocal;

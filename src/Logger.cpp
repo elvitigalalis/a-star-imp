@@ -1,3 +1,3 @@
 #include "Logger.h"
 
-LogLevel Logger::level = LogLevel::DEBUG;
+LogLevel Logger::level = LogLevel::INFO;
