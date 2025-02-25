@@ -6,6 +6,17 @@
         "__threading_support": "cpp",
         "queue": "cpp",
         "__config": "cpp",
-        "sstream": "cpp"
+        "sstream": "cpp",
+        "__hash_table": "cpp",
+        "__tree": "cpp",
+        "deque": "cpp",
+        "forward_list": "cpp",
+        "list": "cpp",
+        "map": "cpp",
+        "set": "cpp",
+        "unordered_map": "cpp",
+        "unordered_set": "cpp",
+        "*.tcc": "cpp",
+        "array": "cpp"
     }
 }

@@ -7,57 +7,50 @@
  * @param api Reference to the API instance for interacting with the maze display.
  * @param diagonalsAllowed Whether diagonal movements are permitted.
  */
-void FrontierBased::explore(MouseLocal &mouse, API &api, bool diagonalsAllowed)
-{
-    std::unordered_set<Cell *> frontiers;
-    Cell *start = &mouse.getMousePosition();
-    frontiers.insert(start);
-    start->setIsExplored(true);
-    Cell *currCell = start;
+void FrontierBased::explore(MouseLocal& mouse, API& api, bool diagonalsAllowed) {
+	std::unordered_set<Cell*> frontiers;
+	Cell* start = &mouse.getMousePosition();
+	frontiers.insert(start);
+	start->setIsExplored(true);
+	Cell* currCell = start;
 
-    while (!frontiers.empty())
-    {
-        // 1) Pick the closest frontier.
-        Cell *nextFrontier = pickNextFrontier(mouse, frontiers, diagonalsAllowed);
-        if (nextFrontier == nullptr)
-        {
-            break;
-        }
+	while (!frontiers.empty()) {
+		// 1) Pick the closest frontier.
+		Cell* nextFrontier = pickNextFrontier(mouse, frontiers, diagonalsAllowed);
+		if (nextFrontier == nullptr) {
+			break;
+		}
 
-        bool moved = traversePathIteratively(&mouse, *nextFrontier, diagonalsAllowed, false, true);
-        if (!moved)
-        {
-            api.setText(nextFrontier->getX(), nextFrontier->getY(), "");
-            frontiers.erase(nextFrontier);
-            continue;
-        }
+		bool moved = traversePathIteratively(&mouse, *nextFrontier, diagonalsAllowed, false, true);
+		if (!moved) {
+			api.setText(nextFrontier->getX(), nextFrontier->getY(), "");
+			frontiers.erase(nextFrontier);
+			continue;
+		}
 
-        // 3) We’ve physically arrived: detect walls, mark as explored.
-        currCell = &mouse.getMousePosition();
-        mouse.detectAndSetWalls(api);
-        currCell->setIsExplored(true);
-        api.setText(currCell->getX(), currCell->getY(), "");
-        frontiers.erase(currCell);
-        // Debugging statement (optional)
-        // cerr << "[NEIGHBOR] Neighbors:" << ...;
+		// 3) We’ve physically arrived: detect walls, mark as explored.
+		currCell = &mouse.getMousePosition();
+		mouse.detectAndSetWalls(api);
+		currCell->setIsExplored(true);
+		api.setText(currCell->getX(), currCell->getY(), "");
+		frontiers.erase(currCell);
+		// Debugging statement (optional)
+		// cerr << "[NEIGHBOR] Neighbors:" << ...;
 
-        // 4) Add valid neighbors, ignoring avoided goals.
-        vector<Cell *> neighbors = mouse.getNeighbors(*currCell, diagonalsAllowed);
-        for (Cell *neighbor : neighbors)
-        {
-            if (!neighbor->getIsExplored() &&
-                mouse.getMovement(*currCell, *neighbor, diagonalsAllowed).getCanMove() &&
-                !mouse.isGoalCell(*neighbor, mouse.getGoalCells()))
-            {
-                api.setText(neighbor->getX(), neighbor->getY(), "*");
-                frontiers.insert(neighbor);
-            }
-        }
-    }
+		// 4) Add valid neighbors, ignoring avoided goals.
+		vector<Cell*> neighbors = mouse.getNeighbors(*currCell, diagonalsAllowed);
+		for (Cell* neighbor : neighbors) {
+			if (!neighbor->getIsExplored() && mouse.getMovement(*currCell, *neighbor, diagonalsAllowed).getCanMove() &&
+				!mouse.isGoalCell(*neighbor, mouse.getGoalCells())) {
+				api.setText(neighbor->getX(), neighbor->getY(), "*");
+				frontiers.insert(neighbor);
+			}
+		}
+	}
 
-    // 5) Finally, visit each avoided goal cell (if reachable).
-    vector<Cell *> goalCells = mouse.getGoalCells();
-    traversePathIteratively(&mouse, goalCells, diagonalsAllowed, false, false);
+	// 5) Finally, visit each avoided goal cell (if reachable).
+	vector<Cell*> goalCells = mouse.getGoalCells();
+	traversePathIteratively(&mouse, goalCells, diagonalsAllowed, false, false);
 }
 
 /**
@@ -68,29 +61,25 @@ void FrontierBased::explore(MouseLocal &mouse, API &api, bool diagonalsAllowed)
  * @param diagonalsAllowed Whether diagonal movements are permitted.
  * @return Cell* Pointer to the closest frontier cell. Returns nullptr if no frontier is found.
  */
-Cell *FrontierBased::pickNextFrontier(MouseLocal &mouse, std::unordered_set<Cell *> &frontiers, bool diagonalsAllowed)
-{
-    Cell *currCell = &mouse.getMousePosition();
-    Cell *bestCell = nullptr;
-    double bestDist = std::numeric_limits<double>::infinity();
+Cell* FrontierBased::pickNextFrontier(MouseLocal& mouse, std::unordered_set<Cell*>& frontiers, bool diagonalsAllowed) {
+	Cell* currCell = &mouse.getMousePosition();
+	Cell* bestCell = nullptr;
+	double bestDist = std::numeric_limits<double>::infinity();
 
-    // Get BFS distances from current cell to all reachable cells
-    std::unordered_map<Cell *, double> distMap = getBFSDist(mouse, currCell, diagonalsAllowed);
+	// Get BFS distances from current cell to all reachable cells
+	std::unordered_map<Cell*, double> distMap = getBFSDist(mouse, currCell, diagonalsAllowed);
 
-    for (Cell *frontier : frontiers)
-    {
-        auto it = distMap.find(frontier);
-        if (it != distMap.end())
-        {
-            double dist = it->second;
-            if (dist < bestDist)
-            {
-                bestDist = dist;
-                bestCell = frontier;
-            }
-        }
-    }
-    return bestCell;
+	for (Cell* frontier : frontiers) {
+		auto it = distMap.find(frontier);
+		if (it != distMap.end()) {
+			double dist = it->second;
+			if (dist < bestDist) {
+				bestDist = dist;
+				bestCell = frontier;
+			}
+		}
+	}
+	return bestCell;
 }
 
 /**
@@ -101,30 +90,25 @@ Cell *FrontierBased::pickNextFrontier(MouseLocal &mouse, std::unordered_set<Cell
  * @param diagonalsAllowed Whether diagonal movements are permitted.
  * @return std::unordered_map<Cell*, double> Map of cells to their distance from the start cell.
  */
-std::unordered_map<Cell *, double> FrontierBased::getBFSDist(MouseLocal &mouse, Cell *startCell, bool diagonalsAllowed)
-{
-    std::queue<Cell *> queue;
-    std::unordered_map<Cell *, double> distMap;
+std::unordered_map<Cell*, double> FrontierBased::getBFSDist(MouseLocal& mouse, Cell* startCell, bool diagonalsAllowed) {
+	std::queue<Cell*> queue;
+	std::unordered_map<Cell*, double> distMap;
 
-    distMap[startCell] = 0.0;
-    queue.push(startCell);
+	distMap[startCell] = 0.0;
+	queue.push(startCell);
 
-    while (!queue.empty())
-    {
-        Cell *currCell = queue.front();
-        queue.pop();
-        double currDist = distMap[currCell];
+	while (!queue.empty()) {
+		Cell* currCell = queue.front();
+		queue.pop();
+		double currDist = distMap[currCell];
 
-        vector<Cell *> neighbors = mouse.getNeighbors(*currCell, diagonalsAllowed);
-        for (Cell *neighbor : neighbors)
-        {
-            if (distMap.find(neighbor) == distMap.end() &&
-                mouse.getMovement(*currCell, *neighbor, diagonalsAllowed).getCanMove())
-            {
-                distMap[neighbor] = currDist + MouseLocal::euclideanDistance(*currCell, *neighbor);
-                queue.push(neighbor);
-            }
-        }
-    }
-    return distMap;
+		vector<Cell*> neighbors = mouse.getNeighbors(*currCell, diagonalsAllowed);
+		for (Cell* neighbor : neighbors) {
+			if (distMap.find(neighbor) == distMap.end() && mouse.getMovement(*currCell, *neighbor, diagonalsAllowed).getCanMove()) {
+				distMap[neighbor] = currDist + MouseLocal::euclideanDistance(*currCell, *neighbor);
+				queue.push(neighbor);
+			}
+		}
+	}
+	return distMap;
 }
