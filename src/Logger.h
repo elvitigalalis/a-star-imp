@@ -21,7 +21,7 @@ class Logger {
 	    switch (logLevel) {
 		case LogLevel::DEBUG: prefix = "[DEBUG] "; break;
 		case LogLevel::INFO: prefix = "[INFO] "; break;
-		case LogLevel::WARN: prefix = "[WARN] "; break;
+		case LogLevel::WARN: prefix = "\n[WARN] "; break;
 		case LogLevel::ERROR: prefix = "[ERROR] "; break;
 	    }
 	    cerr << prefix << message << std::endl;
