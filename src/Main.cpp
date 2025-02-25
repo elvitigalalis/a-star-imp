@@ -1,5 +1,5 @@
-#include "Main.h"
 
+#include "Main.h"
 MouseLocal* mousePtr;
 API* apiPtr;
 AStar* aStarPtr;
@@ -124,13 +124,13 @@ void turnMouseToNextCell(const Cell& currentCell, const Cell& nextCell) {
 	}
 }
 
-enum class MovementBlock { RFLF, LFRF, RFRF, LFLF, F, RF, LF, L, R, DEFAULT };
+enum class MovementBlock { RFLF, LFRF, RFRF, LFLF, FLF, FRF, F, RF, LF, L, R, DEFAULT };
 
 MovementBlock parseMovementBlock(const string& block) {
 	// Maps movement block strings to MovementBlock values.
 	static const unordered_map<string, MovementBlock> movementMap = {
-		{"RFLF", MovementBlock::RFLF}, {"LFRF", MovementBlock::LFRF}, {"RFRF", MovementBlock::RFRF},
-		{"LFLF", MovementBlock::LFLF}, {"F", MovementBlock::F},		  {"RF", MovementBlock::RF},
+		{"RFLF", MovementBlock::RFLF}, {"LFRF", MovementBlock::LFRF}, {"RFRF", MovementBlock::RFRF}, {"LFLF", MovementBlock::LFLF},
+		{"FLF", MovementBlock::FLF},   {"FRF", MovementBlock::FRF},	  {"F", MovementBlock::F},		 {"RF", MovementBlock::RF},
 		{"LF", MovementBlock::LF},	   {"L", MovementBlock::L},		  {"R", MovementBlock::R}};
 	auto it = movementMap.find(block);
 	if (it != movementMap.end())
@@ -176,28 +176,83 @@ void executeSequence(const string& seq, ostringstream& diagPath) {
 
 void performSequence(const string& seq, ostringstream& diagPath, bool localMove = false) {
 	// Executes and updates mouse position for combo moves.
+	if (localMove) {
+		("Performing Sequence: " + seq);
+	}
 	executeSequence(seq, diagPath);
 	if (localMove) {
 		mousePtr->moveForwardLocal();
 	}
 }
 
-void executeIndividualMovement(const string& move, ostringstream& diagPath, MovementBlock& prevBlockType) {
-	// Executes individual movements.
-	diagPath << move << "#";
-	if (move == "F") {
-		apiPtr->moveForward();
-		prevBlockType = MovementBlock::F;
-	} else if (move == "L") {
-		apiPtr->turnLeft();
-		prevBlockType = MovementBlock::L;
-	} else if (move == "R") {
-		apiPtr->turnRight();
-		prevBlockType = MovementBlock::R;
+void executeIndividualMovement(const vector<string>& movementsSequence, int& i, ostringstream& diagPath, MovementBlock& prevBlockType,
+							   Cell& currCell) {
+	MovementBlock threeMovementBlock = MovementBlock::DEFAULT;
+	MovementBlock twoMovementBlock = MovementBlock::DEFAULT;
+	MovementBlock nextMovementBlock = MovementBlock::DEFAULT;
+
+	if (i + 2 < static_cast<int>(movementsSequence.size())) {
+		threeMovementBlock = parseMovementBlock(movementsSequence[i] + movementsSequence[i + 1] + movementsSequence[i + 2]);
+	} else if (i + 1 < static_cast<int>(movementsSequence.size())) {
+		twoMovementBlock = parseMovementBlock(movementsSequence[i] + movementsSequence[i + 1]);
 	} else {
-		LOG_ERROR("Invalid Movement: " + move);
-		prevBlockType = MovementBlock::DEFAULT;
+		nextMovementBlock = parseMovementBlock(movementsSequence[i]);
 	}
+
+	if (movementsSequence.size() != 1) {
+		if (prevBlockType == MovementBlock::RFLF || prevBlockType == MovementBlock::LFLF) {
+			if (twoMovementBlock == MovementBlock::RF) {
+				performSequence("FH#R45#FH#", diagPath, true);
+				prevBlockType = twoMovementBlock;
+				i++;
+			} else if (twoMovementBlock == MovementBlock::LF) {
+				performSequence("L#FH#L45#FH#", diagPath, true);
+				prevBlockType = twoMovementBlock;
+				i++;
+			} else if (threeMovementBlock == MovementBlock::FLF) {
+				performSequence("L45#F#L45#FH#R45#FH#", diagPath, true);
+				prevBlockType = MovementBlock::F;
+				i += 2;
+			} else {
+				performSequence("L45#FH#", diagPath);
+			}
+		} else if (prevBlockType == MovementBlock::LFRF || prevBlockType == MovementBlock::RFRF) {
+			if (twoMovementBlock == MovementBlock::LF) {
+				performSequence("FH#L45#FH#", diagPath, true);
+				prevBlockType = twoMovementBlock;
+				i++;
+			} else if (twoMovementBlock == MovementBlock::RF) {
+				performSequence("R#FH#R45#FH#", diagPath, true);
+				prevBlockType = twoMovementBlock;
+				i++;
+			} else if (threeMovementBlock == MovementBlock::FRF) {
+				performSequence("R45#F#R45#FH#L45#FH#", diagPath, true);
+				prevBlockType = MovementBlock::F;
+				i += 2;
+			} else {
+				performSequence("R45#FH#", diagPath);
+			}
+		}
+	} else {
+		if (nextMovementBlock == MovementBlock::R) {
+			performSequence("R#", diagPath);
+		} else if (nextMovementBlock == MovementBlock::L) {
+			performSequence("L#", diagPath);
+		} else {
+			performSequence("F#", diagPath);
+		}
+		prevBlockType = nextMovementBlock;
+	}
+	currCell = mousePtr->getMousePosition();
+	// LOG_INFO("Step " + to_string(i) + ": " + currCell.toString());
+}
+
+void executeIndividualMovement(string movement, Cell& currCell) {
+	vector<string> movementsSequence = {movement};
+	ostringstream path = ostringstream();
+	MovementBlock prevBlockType = MovementBlock::DEFAULT;
+	int i = 0;
+	executeIndividualMovement(movementsSequence, i, path, prevBlockType, currCell);
 }
 
 string diagonalizeAndRun(Cell& currCell, const string& path) {
@@ -205,172 +260,95 @@ string diagonalizeAndRun(Cell& currCell, const string& path) {
 	vector<string> movementsSequence = splitPath(path);
 	MovementBlock blockType;
 	MovementBlock prevBlockType = MovementBlock::DEFAULT;
-	int i;
+	int i = 0;
 
-	// Processes all moves until last three moves.
-	for (i = 0; i < static_cast<int>(movementsSequence.size()) - 3; i++) {
+	while (i < static_cast<int>(movementsSequence.size())) {
 		currCell = mousePtr->getMousePosition();
-		LOG_INFO("Step " + std::to_string(i) + ": " + currCell.toString());
+		LOG_INFO("Step " + to_string(i) + ": " + currCell.toString());
 
-		// Pre-process a forward movement -> combo with next four movements?
-		if (movementsSequence[i] == "F" && (static_cast<int>(movementsSequence.size()) - i) > 4) {
-			i++;
-			string nextMovementBlock = movementsSequence[i] + movementsSequence[i + 1] + movementsSequence[i + 2] + movementsSequence[i + 3];
-			if (nextMovementBlock == "RFRF" || nextMovementBlock == "LFLF" || nextMovementBlock == "RFLF" || nextMovementBlock == "LFRF") {
+		// Check for a forward combo: "F" followed by a 4-move combo block.
+		if (movementsSequence[i] == "F" && (i + 4 < static_cast<int>(movementsSequence.size()))) {
+			MovementBlock nextMovementBlock =
+				parseMovementBlock(movementsSequence[i + 1] + movementsSequence[i + 2] + movementsSequence[i + 3] + movementsSequence[i + 4]);
+			if (nextMovementBlock == MovementBlock::RFRF || nextMovementBlock == MovementBlock::LFLF || nextMovementBlock == MovementBlock::RFLF ||
+				nextMovementBlock == MovementBlock::LFRF) {
+				i++;  // Consume the "F"
 				if (prevBlockType != MovementBlock::RFRF && prevBlockType != MovementBlock::LFLF && prevBlockType != MovementBlock::RFLF &&
 					prevBlockType != MovementBlock::LFRF) {
 					performSequence("FH#", diagPath, true);
 				} else {
 					if (prevBlockType == MovementBlock::RFLF || prevBlockType == MovementBlock::LFLF) {
-						performSequence("L#F#", diagPath);
+						performSequence("L45#F#", diagPath);
 					} else if (prevBlockType == MovementBlock::LFRF || prevBlockType == MovementBlock::RFRF) {
-						performSequence("R#F#", diagPath);
+						performSequence("R45#F#", diagPath);
 					}
 				}
 				prevBlockType = MovementBlock::F;
-			} else {
-				i--;
 			}
 		}
 
-		// Determine the type of movement block (combo/regular).
+		// Attempt to form a 4-move combo block if possible.
 		if (i + 3 < static_cast<int>(movementsSequence.size())) {
 			blockType = parseMovementBlock(movementsSequence[i] + movementsSequence[i + 1] + movementsSequence[i + 2] + movementsSequence[i + 3]);
-		} else {
-			blockType = MovementBlock::DEFAULT;
-		}
+			LOG_WARN("Block Type: " + movementsSequence[i] + movementsSequence[i + 1] + movementsSequence[i + 2] + movementsSequence[i + 3]);
+			switch (blockType) {
+				case MovementBlock::RFLF:
+					if (prevBlockType == blockType || prevBlockType == MovementBlock::LFLF)
+						performSequence("F#", diagPath);
+					else if (prevBlockType == MovementBlock::LFRF || prevBlockType == MovementBlock::RFRF)
+						performSequence("R#F#", diagPath);
+					else if (prevBlockType == MovementBlock::F)
+						performSequence("R45#F#", diagPath);
+					else
+						performSequence("R#FH#L45#FH#", diagPath, true);
+					i += 3;
+					break;
 
-		// Based on movement block type, perform a sequence of movements.
-		switch (blockType) {
-			case MovementBlock::RFLF:
-				if (prevBlockType == blockType || prevBlockType == MovementBlock::LFLF) {
-					performSequence("F#", diagPath);
-				} else if (prevBlockType == MovementBlock::LFRF || prevBlockType == MovementBlock::RFRF) {
-					performSequence("R#F#", diagPath);
-				} else if (prevBlockType == MovementBlock::F) {
-					performSequence("R45#F#", diagPath);
-				} else {
-					performSequence("R#FH#L45#FH#", diagPath, true);
-				}
-				i += 3;
-				prevBlockType = blockType;
-				break;
+				case MovementBlock::LFRF:
+					if (prevBlockType == blockType || prevBlockType == MovementBlock::RFRF)
+						performSequence("F#", diagPath);
+					else if (prevBlockType == MovementBlock::RFLF || prevBlockType == MovementBlock::LFLF)
+						performSequence("L#F#", diagPath);
+					else if (prevBlockType == MovementBlock::F)
+						performSequence("L45#F#", diagPath);
+					else
+						performSequence("L#FH#R45#FH#", diagPath, true);
+					i += 3;
+					break;
 
-			case MovementBlock::LFRF:
-				if (prevBlockType == blockType || prevBlockType == MovementBlock::RFRF) {
-					performSequence("F#", diagPath);
-				} else if (prevBlockType == MovementBlock::RFLF || prevBlockType == MovementBlock::LFLF) {
-					performSequence("L#F#", diagPath);
-				} else if (prevBlockType == MovementBlock::F) {
-					performSequence("L45#F#", diagPath);
-				} else {
-					performSequence("L#FH#R45#FH#", diagPath, true);
-				}
-				i += 3;
-				prevBlockType = blockType;
-				break;
-
-			case MovementBlock::RFRF:
-				if (prevBlockType == blockType) {
-					performSequence("R#FH#R#FH#", diagPath, true);
-				} else if (prevBlockType == MovementBlock::RFLF || prevBlockType == MovementBlock::LFLF) {
-					performSequence("FH#R#FH#", diagPath, true);
-				} else if (prevBlockType == MovementBlock::F) {
-					performSequence("R45#FH#R#FH#", diagPath, true);
-				} else {
-					performSequence("R#FH#R45#FH#", diagPath, true);
-				}
-				i += 3;
-				prevBlockType = blockType;
-				break;
-
-			case MovementBlock::LFLF:
-				if (prevBlockType == blockType) {
-					performSequence("L#FH#L#FH#", diagPath, true);
-				} else if (prevBlockType == MovementBlock::LFRF || prevBlockType == MovementBlock::RFRF) {
-					performSequence("FH#L#FH#", diagPath, true);
-				} else if (prevBlockType == MovementBlock::F) {
-					performSequence("L45#FH#L#FH#", diagPath, true);
-				} else {
-					performSequence("L#FH#L45#FH#", diagPath, true);
-				}
-				i += 3;
-				prevBlockType = blockType;
-				break;
-
-			case MovementBlock::DEFAULT:
-			default:
-				if (prevBlockType == MovementBlock::RFLF || prevBlockType == MovementBlock::LFLF) {
-					if ((movementsSequence[i] + movementsSequence[i + 1]) == "RF") {
-						LOG_DEBUG("POPPPPPY");
-						performSequence("FH#R45#FH#", diagPath, true);
-						i++;
-						prevBlockType = MovementBlock::RF;
-						break;
-					} else if ((movementsSequence[i] + movementsSequence[i + 1]) == "LF") {
-						LOG_DEBUG("POPPY");
-						performSequence("L#FH#L45#FH#", diagPath, true);
-						i++;
-						prevBlockType = MovementBlock::LF;
-						break;
-					} else if ((i + 2 < static_cast<int>(movementsSequence.size())) &&
-							   (movementsSequence[i] + movementsSequence[i + 1] + movementsSequence[i + 2] == "FLF")) {
-						LOG_DEBUG("POPPY");
-						performSequence("L45#F#L45#FH#R45#FH#L45#FH#", diagPath);
-						i += 2;
-						prevBlockType = MovementBlock::F;
-						break;
-					}
-					performSequence("L45#FH#", diagPath);
-				} else if (prevBlockType == MovementBlock::LFRF || prevBlockType == MovementBlock::RFRF) {
-					if ((movementsSequence[i] + movementsSequence[i + 1]) == "LF") {
-						LOG_DEBUG("POPPY");
-						performSequence("FH#L45#FH#", diagPath, true);
-						i++;
-						prevBlockType = MovementBlock::LF;
-						break;
-					} else if ((movementsSequence[i] + movementsSequence[i + 1]) == "RF") {
-						LOG_DEBUG("POPPPPY");
+				case MovementBlock::RFRF:
+					if (prevBlockType == blockType)
+						performSequence("R#FH#R#FH#", diagPath, true);
+					else if (prevBlockType == MovementBlock::RFLF || prevBlockType == MovementBlock::LFLF)
+						performSequence("FH#R#FH#", diagPath, true);
+					else if (prevBlockType == MovementBlock::F)
+						performSequence("R45#FH#R#FH#", diagPath, true);
+					else
 						performSequence("R#FH#R45#FH#", diagPath, true);
-						i++;
-						prevBlockType = MovementBlock::RF;
-						break;
-					} else if ((i + 2 < static_cast<int>(movementsSequence.size())) &&
-							   (movementsSequence[i] + movementsSequence[i + 1] + movementsSequence[i + 2] == "FRF")) {
-						LOG_DEBUG("POPPPPY");
-						performSequence("R45#F#R45#FH#R45#FH#R45#FH#", diagPath);
-						i += 2;
-						prevBlockType = MovementBlock::F;
-						break;
-					}
-					performSequence("R45#FH#", diagPath);
-				}
-				executeIndividualMovement(movementsSequence[i], diagPath, prevBlockType);
-				break;
-		}
-	}
+					i += 3;
+					break;
 
-	// Handle remaining movements after main loop //FIXME this is it
-	if (prevBlockType == MovementBlock::RFLF || prevBlockType == MovementBlock::LFLF) {
-		performSequence("L45#FH#", diagPath);
-	} else if (prevBlockType == MovementBlock::LFRF || prevBlockType == MovementBlock::RFRF) {
-		performSequence("R45#FH#", diagPath);
-	}
+				case MovementBlock::LFLF:
+					if (prevBlockType == blockType)
+						performSequence("L#FH#L#FH#", diagPath, true);
+					else if (prevBlockType == MovementBlock::LFRF || prevBlockType == MovementBlock::RFRF)
+						performSequence("FH#L#FH#", diagPath, true);
+					else if (prevBlockType == MovementBlock::F)
+						performSequence("L45#FH#L#FH#", diagPath, true);
+					else
+						performSequence("L#FH#L45#FH#", diagPath, true);
+					i += 3;
+					break;
 
-	// Process any remaining movements
-	if (i < static_cast<int>(movementsSequence.size())) {
-		LOG_DEBUG("Moves remaining: " + std::to_string(movementsSequence.size() - i) + " with moves being ...");
-		for (int j = i; j < static_cast<int>(movementsSequence.size()); j++) {
-			LOG_DEBUG(" Movement: " + movementsSequence[j]);
-			currCell = mousePtr->getMousePosition();
-			LOG_DEBUG(" Mouse CurrPos: (" + std::to_string(currCell.getX()) + ", " + std::to_string(currCell.getY()) + ")");
-			executeIndividualMovement(movementsSequence[j], diagPath, prevBlockType);
+				default:
+					LOG_WARN("Default Movement: " + movementsSequence[i]);
+					executeIndividualMovement(movementsSequence, i, diagPath, prevBlockType, currCell);
+					break;
+			}
+
+			prevBlockType = blockType;
+			i++;
 		}
-		currCell = mousePtr->getMousePosition();
-		LOG_DEBUG(" Mouse CurrPos: (" + std::to_string(currCell.getX()) + ", " + std::to_string(currCell.getY()) + ")");
-	} else {
-		currCell = mousePtr->getMousePosition();
-		LOG_DEBUG(" Mouse CurrPos: (" + std::to_string(currCell.getX()) + ", " + std::to_string(currCell.getY()) + ")");
 	}
 	return diagPath.str();
 }
@@ -428,9 +406,6 @@ bool traversePathIteratively(MouseLocal* mouse, vector<Cell*>& goalCells, bool d
 		// Detect walls
 		mouse->detectAndSetWalls(*apiPtr);	// Pass API if needed
 
-		// vector<Cell*> goalCells2();
-		// vector<Cell*> goalCells2;
-
 		// Get path from A* or your best algorithm
 		vector<Cell*> cellPath = getBestAlgorithmPath(aStarPtr, goalCells, diagonalsAllowed, avoidGoalCells);
 
@@ -450,7 +425,6 @@ bool traversePathIteratively(MouseLocal* mouse, vector<Cell*>& goalCells, bool d
 		for (const auto& c : cellPath) {
 			algPathStr += "(" + std::to_string(c->getX()) + ", " + std::to_string(c->getY()) + ") -> ";
 		}
-		LOG_DEBUG("[PROCESSED] Algorithm Path: " + algPathStr);
 
 		// Convert path to string
 		vector<Cell*> cellPathPtrs;
@@ -458,29 +432,21 @@ bool traversePathIteratively(MouseLocal* mouse, vector<Cell*>& goalCells, bool d
 			cellPathPtrs.push_back(cell);
 		}
 		string path = AStar::pathToString(*mouse, cellPathPtrs);
-		// LOG_DEBUG("[PROCESSED] Path: " + path); // Optional logging
+
+		if (cellPath.size() > 9 && allExplored) {
+			LOG_INFO("Path: " + algPathStr);
+			LOG_INFO("LFR Path: " + path);
+		}
 
 		if (allExplored && diagonalsAllowed) {
-			LOG_DEBUG("[PROCESSED] Path: " + path);
 			path = diagonalizeAndRun(currCell, path);
-			LOG_DEBUG("[PROCESSED] Diagonalized Path: " + path);
+			LOG_WARN("Diag Path: " + path);
 		} else {
 			// Execute the movement commands step-by-step
 			stringstream ss(path);
 			string move;
 			while (std::getline(ss, move, '#')) {
-				if (move == "F") {
-					apiPtr->moveForward();
-				} else if (move == "L") {
-					apiPtr->turnLeft();
-				} else if (move == "R") {
-					apiPtr->turnRight();
-				} else {
-					LOG_DEBUG("[ERROR] Invalid Movement: " + move);
-				}
-
-				currCell = (mouse->getMousePosition());
-				LOG_DEBUG("[POS] Updated Mouse Position: (" + std::to_string(currCell.getX()) + ", " + std::to_string(currCell.getY()) + ")\n");
+				executeIndividualMovement(move, currCell);
 
 				if (!currCell.getIsExplored()) {
 					LOG_DEBUG("[RE-CALC] Cell is unexplored, calculating new path.");

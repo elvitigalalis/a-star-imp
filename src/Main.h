@@ -19,6 +19,7 @@
 
 using std::vector;
 using std::unordered_map;
+using std::to_string;
 
 class Cell;
 class MouseLocal;
